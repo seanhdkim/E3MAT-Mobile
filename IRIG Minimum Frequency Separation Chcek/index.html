@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Telemetry Minimum Frequency Separation Calculator</title>
+
+  <style>
+    :root {
+      --navy: #0b1f3a;
+      --blue: #1d4f91;
+      --light-blue: #eaf2fb;
+      --border: #b8c7d9;
+      --text: #17212b;
+      --muted: #52616f;
+      --success: #0b6e3e;
+      --success-bg: #e9f7ef;
+      --danger: #a61b1b;
+      --danger-bg: #fceded;
+      --warning-bg: #fff6dc;
+      --white: #ffffff;
+      --shadow: 0 3px 12px rgba(11, 31, 58, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: #f4f7fa;
+      line-height: 1.45;
+    }
+
+    header {
+      background: var(--navy);
+      color: var(--white);
+      padding: 1.5rem 1rem;
+      border-bottom: 5px solid var(--blue);
+    }
+
+    header .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 0.35rem;
+      font-size: 1.65rem;
+    }
+
+    header p {
+      margin: 0;
+      color: #d9e6f5;
+      max-width: 950px;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 1.5rem auto 2.5rem;
+      padding: 0 1rem;
+    }
+
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.25rem;
+      overflow: hidden;
+    }
+
+    .card-header {
+      background: var(--light-blue);
+      border-bottom: 1px solid var(--border);
+      padding: 0.85rem 1rem;
+    }
+
+    .card-header h2 {
+      margin: 0;
+      font-size: 1.15rem;
+      color: var(--navy);
+    }
+
+    .card-body {
+      padding: 1rem;
+    }
+
+    .signal-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .signal-panel {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      background: #fbfdff;
+    }
+
+    .signal-panel h3 {
+      margin-top: 0;
+      margin-bottom: 0.9rem;
+      color: var(--navy);
+      font-size: 1.05rem;
+    }
+
+    .field {
+      margin-bottom: 0.9rem;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+      font-size: 0.92rem;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 2.5rem;
+      padding: 0.5rem 0.6rem;
+      font: inherit;
+      color: var(--text);
+      border: 1px solid #7e94ac;
+      border-radius: 4px;
+      background: var(--white);
+    }
+
+    input:focus,
+    select:focus,
+    button:focus {
+      outline: 3px solid rgba(29, 79, 145, 0.3);
+      outline-offset: 2px;
+    }
+
+    .help-text {
+      margin: 0.25rem 0 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    button {
+      min-height: 2.5rem;
+      border: 0;
+      border-radius: 4px;
+      padding: 0.55rem 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .btn-primary {
+      color: var(--white);
+      background: var(--blue);
+    }
+
+    .btn-primary:hover {
+      background: #153d70;
+    }
+
+    .btn-secondary {
+      color: var(--navy);
+      background: #dfe8f2;
+      border: 1px solid #aabbd0;
+    }
+
+    .btn-secondary:hover {
+      background: #cfdae6;
+    }
+
+    .error {
+      display: none;
+      margin-top: 1rem;
+      padding: 0.8rem 1rem;
+      border: 1px solid #cf4545;
+      border-radius: 4px;
+      color: #7f1111;
+      background: #fff0f0;
+      font-weight: 700;
+    }
+
+    .results {
+      display: none;
+    }
+
+    .status {
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      border: 1px solid;
+    }
+
+    .status h3 {
+      margin: 0 0 0.35rem;
+      font-size: 1.2rem;
+    }
+
+    .status p {
+      margin: 0.25rem 0;
+    }
+
+    .status.meets {
+      background: var(--success-bg);
+      border-color: #77bd95;
+      color: #084c2c;
+    }
+
+    .status.does-not-meet {
+      background: var(--danger-bg);
+      border-color: #d88a8a;
+      color: #801313;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .metric {
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 0.75rem;
+      background: #fbfdff;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .metric-value {
+      margin-top: 0.25rem;
+      color: var(--navy);
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .calculation {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      background: #fbfdff;
+    }
+
+    .calculation h3 {
+      margin-top: 0;
+      color: var(--navy);
+      font-size: 1rem;
+    }
+
+    .equation {
+      display: block;
+      margin: 0.8rem 0;
+      padding: 0.75rem;
+      border-left: 4px solid var(--blue);
+      background: #edf4fc;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.92rem;
+      overflow-wrap: anywhere;
+    }
+
+    .details {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .details th,
+    .details td {
+      padding: 0.45rem;
+      border: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .details th {
+      width: 52%;
+      background: #edf4fc;
+      color: var(--navy);
+    }
+
+    .note {
+      padding: 0.9rem 1rem;
+      border-left: 4px solid #b57900;
+      border-radius: 4px;
+      background: var(--warning-bg);
+      color: #584000;
+      font-size: 0.9rem;
+    }
+
+    .note ul {
+      margin: 0.5rem 0 0;
+      padding-left: 1.2rem;
+    }
+
+    footer {
+      max-width: 1200px;
+      margin: 0 auto 1.5rem;
+      padding: 0 1rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    @media (max-width: 800px) {
+      .signal-grid,
+      .calc-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 480px) {
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="container">
+      <h1>Telemetry Minimum Frequency Separation Calculator</h1>
+      <p>
+        Calculates minimum center-frequency separation using IRIG 106-23 Chapter 2 Equation A-1.
+        Both signal directions are evaluated; the larger result is the governing
+        minimum frequency separation.
+      </p>
+    </div>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="input-heading">
+      <div class="card-header">
+        <h2 id="input-heading">Signal Inputs</h2>
+      </div>
+
+      <div class="card-body">
+        <form id="calculatorForm" novalidate>
+          <div class="signal-grid">
+            <section class="signal-panel" aria-labelledby="signal1-heading">
+              <h3 id="signal1-heading">Signal 1</h3>
+
+              <div class="field">
+                <label for="frequency1">Center Frequency (MHz)</label>
+                <input
+                  id="frequency1"
+                  name="frequency1"
+                  type="number"
+                  min="0"
+                  step="any"
+                  placeholder="Example: 2200.0"
+                  required
+                />
+              </div>
+
+              <div class="field">
+                <label for="rate1">Data Rate (Mbps)</label>
+                <input
+                  id="rate1"
+                  name="rate1"
+                  type="number"
+                  min="0.000001"
+                  step="any"
+                  placeholder="Example: 5.0"
+                  required
+                />
+                <p class="help-text">
+                  Enter the information/data rate before coding overhead.
+                </p>
+              </div>
+
+              <div class="field">
+                <label for="modulation1">Modulation-Coding Type</label>
+                <select id="modulation1" name="modulation1" required>
+                  <option value="pcm-fm">PCM/FM</option>
+                  <option value="soqpsk-tg" selected>SOQPSK-TG</option>
+                  <option value="artm-cpm">ARTM CPM</option>
+                  <option value="soqpsk-stc">SOQPSK-STC</option>
+                  <option value="soqpsk-ldpc-4-5">SOQPSK-LDPC, r = 4/5</option>
+                  <option value="soqpsk-ldpc-2-3">SOQPSK-LDPC, r = 2/3</option>
+                  <option value="soqpsk-ldpc-1-2">SOQPSK-LDPC, r = 1/2</option>
+                  <option value="soqpsk-stc-ldpc-4-5">SOQPSK-STC/LDPC, r = 4/5</option>
+                  <option value="soqpsk-stc-ldpc-2-3">SOQPSK-STC/LDPC, r = 2/3</option>
+                  <option value="soqpsk-stc-ldpc-1-2">SOQPSK-STC/LDPC, r = 1/2</option>
+                </select>
+              </div>
+            </section>
+
+            <section class="signal-panel" aria-labelledby="signal2-heading">
+              <h3 id="signal2-heading">Signal 2</h3>
+
+              <div class="field">
+                <label for="frequency2">Center Frequency (MHz)</label>
+                <input
+                  id="frequency2"
+                  name="frequency2"
+                  type="number"
+                  min="0"
+                  step="any"
+                  placeholder="Example: 2207.0"
+                  required
+                />
+              </div>
+
+              <div class="field">
+                <label for="rate2">Data Rate (Mbps)</label>
+                <input
+                  id="rate2"
+                  name="rate2"
+                  type="number"
+                  min="0.000001"
+                  step="any"
+                  placeholder="Example: 3.0"
+                  required
+                />
+                <p class="help-text">
+                  Enter the information/data rate before coding overhead.
+                </p>
+              </div>
+
+              <div class="field">
+                <label for="modulation2">Modulation-Coding Type</label>
+                <select id="modulation2" name="modulation2" required>
+                  <option value="pcm-fm">PCM/FM</option>
+                  <option value="soqpsk-tg" selected>SOQPSK-TG</option>
+                  <option value="artm-cpm">ARTM CPM</option>
+                  <option value="soqpsk-stc">SOQPSK-STC</option>
+                  <option value="soqpsk-ldpc-4-5">SOQPSK-LDPC, r = 4/5</option>
+                  <option value="soqpsk-ldpc-2-3">SOQPSK-LDPC, r = 2/3</option>
+                  <option value="soqpsk-ldpc-1-2">SOQPSK-LDPC, r = 1/2</option>
+                  <option value="soqpsk-stc-ldpc-4-5">SOQPSK-STC/LDPC, r = 4/5</option>
+                  <option value="soqpsk-stc-ldpc-2-3">SOQPSK-STC/LDPC, r = 2/3</option>
+                  <option value="soqpsk-stc-ldpc-1-2">SOQPSK-STC/LDPC, r = 1/2</option>
+                </select>
+              </div>
+            </section>
+          </div>
+
+          <div class="actions">
+            <button class="btn-primary" type="submit">Calculate Separation</button>
+            <button class="btn-secondary" type="button" id="clearButton">Clear</button>
+          </div>
+
+          <div id="errorMessage" class="error" role="alert"></div>
+        </form>
+      </div>
+    </section>
+
+    <section id="resultsSection" class="card results" aria-live="polite" aria-labelledby="results-heading">
+      <div class="card-header">
+        <h2 id="results-heading">Calculation Results</h2>
+      </div>
+
+      <div class="card-body">
+        <div id="statusBox" class="status">
+          <h3 id="statusTitle"></h3>
+          <p id="statusText"></p>
+          <p id="marginText"></p>
+        </div>
+
+        <div class="summary-grid">
+          <div class="metric">
+            <div class="metric-label">Actual Center Separation</div>
+            <div id="actualSeparation" class="metric-value">—</div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-label">Signal 1 Desired Result</div>
+            <div id="signal1DesiredResult" class="metric-value">—</div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-label">Signal 2 Desired Result</div>
+            <div id="signal2DesiredResult" class="metric-value">—</div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-label">Governing Minimum Required</div>
+            <div id="governingResult" class="metric-value">—</div>
+          </div>
+        </div>
+
+        <div class="calc-grid">
+          <article class="calculation">
+            <h3>Direction 1: Signal 1 Desired / Signal 2 Interfering</h3>
+            <div id="equation1" class="equation"></div>
+            <table class="details">
+              <tbody id="details1"></tbody>
+            </table>
+          </article>
+
+          <article class="calculation">
+            <h3>Direction 2: Signal 2 Desired / Signal 1 Interfering</h3>
+            <div id="equation2" class="equation"></div>
+            <table class="details">
+              <tbody id="details2"></tbody>
+            </table>
+          </article>
+        </div>
+
+        <div class="note" style="margin-top: 1rem;">
+          <strong>Calculation Notes</strong>
+          <ul>
+            <li>
+              Equation A-1: ΔF₀ = a<sub>s</sub>n<sub>s</sub>R<sub>s</sub> + a<sub>i</sub>n<sub>i</sub>R<sub>i</sub>.
+            </li>
+            <li>
+              The governing required separation is the larger result from the two
+              desired/interferer directions.
+            </li>
+            <li>
+              Pass/fail is evaluated using the unrounded governing calculation. The
+              parenthetical value is the whole-MHz ceiling for reference when frequency
+              assignments are made in 1 MHz increments.
+            </li>
+            <li>
+              Results are planning guidance only. Validate final frequency assignments,
+              receiver assumptions, operational constraints, and spectrum coordination
+              requirements through the appropriate frequency-management process.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Coefficients and multipliers are implemented from RCC Telemetry Standards,
+    Appendix A, Equation A-1, Tables A-1 through A-3.
+  </footer>
+
+  <script>
+    "use strict";
+
+    const waveformDefinitions = {
+      "pcm-fm": {
+        label: "PCM/FM",
+        family: "pcm",
+        coded: false,
+        multiplier: 1
+      },
+      "soqpsk-tg": {
+        label: "SOQPSK-TG",
+        family: "soqpsk",
+        coded: false,
+        multiplier: 1
+      },
+      "artm-cpm": {
+        label: "ARTM CPM",
+        family: "artm",
+        coded: false,
+        multiplier: 1
+      },
+      "soqpsk-stc": {
+        label: "SOQPSK-STC",
+        family: "soqpsk",
+        coded: true,
+        multiplier: 26 / 25
+      },
+      "soqpsk-ldpc-4-5": {
+        label: "SOQPSK-LDPC, r = 4/5",
+        family: "soqpsk",
+        coded: true,
+        multiplier: 21 / 16
+      },
+      "soqpsk-ldpc-2-3": {
+        label: "SOQPSK-LDPC, r = 2/3",
+        family: "soqpsk",
+        coded: true,
+        multiplier: 25 / 16
+      },
+      "soqpsk-ldpc-1-2": {
+        label: "SOQPSK-LDPC, r = 1/2",
+        family: "soqpsk",
+        coded: true,
+        multiplier: 33 / 16
+      },
+      "soqpsk-stc-ldpc-4-5": {
+        label: "SOQPSK-STC/LDPC, r = 4/5",
+        family: "soqpsk",
+        coded: true,
+        multiplier: 273 / 200
+      },
+      "soqpsk-stc-ldpc-2-3": {
+        label: "SOQPSK-STC/LDPC, r = 2/3",
+        family: "soqpsk",
+        coded: true,
+        multiplier: 13 / 8
+      },
+      "soqpsk-stc-ldpc-1-2": {
+        label: "SOQPSK-STC/LDPC, r = 1/2",
+        family: "soqpsk",
+        coded: true,
+        multiplier: 429 / 200
+      }
+    };
+
+    // Table A-1 coefficients when the desired signal is uncoded.
+    const tableA1DesiredCoefficients = {
+      pcm: 0.80,
+      soqpsk: 0.60,
+      artm: 0.55
+    };
+
+    const tableA1InterferingCoefficients = {
+      pcm: 0.95,
+      soqpsk: 0.45,
+      artm: 0.30
+    };
+
+    // Table A-2 coefficients when the desired signal is coded.
+    const tableA2InterferingCoefficients = {
+      pcm: 0.75,
+      soqpsk: 0.35,
+      artm: 0.25
+    };
+
+    const tableA2CodedDesiredCoefficient = 0.60;
+
+    const form = document.getElementById("calculatorForm");
+    const clearButton = document.getElementById("clearButton");
+    const errorMessage = document.getElementById("errorMessage");
+    const resultsSection = document.getElementById("resultsSection");
+
+    function formatNumber(value, decimals = 3) {
+      return Number(value).toLocaleString("en-US", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: decimals
+      });
+    }
+
+    function formatMHz(value) {
+      return `${formatNumber(value)} MHz`;
+    }
+
+    function formatMultiplier(value) {
+      return formatNumber(value, 5);
+    }
+
+    function formatGoverningSeparation(rawValue) {
+      const roundedUpValue = Math.ceil(rawValue);
+
+      return `${formatMHz(rawValue)} (${formatMHz(roundedUpValue)} rounded up)`;
+    }
+
+    function getSignal(signalNumber) {
+      const frequency = Number(document.getElementById(`frequency${signalNumber}`).value);
+      const rate = Number(document.getElementById(`rate${signalNumber}`).value);
+      const waveformKey = document.getElementById(`modulation${signalNumber}`).value;
+      const waveform = waveformDefinitions[waveformKey];
+
+      return {
+        name: `Signal ${signalNumber}`,
+        frequency,
+        rate,
+        waveformKey,
+        waveform
+      };
+    }
+
+    function validateSignal(signal) {
+      if (!Number.isFinite(signal.frequency) || signal.frequency < 0) {
+        return `${signal.name}: enter a valid center frequency of zero or greater.`;
+      }
+
+      if (!Number.isFinite(signal.rate) || signal.rate <= 0) {
+        return `${signal.name}: enter a valid data rate greater than zero.`;
+      }
+
+      if (!signal.waveform) {
+        return `${signal.name}: select a valid modulation-coding type.`;
+      }
+
+      return null;
+    }
+
+    function calculateDirectionalSeparation(desired, interferer) {
+      let desiredCoefficient;
+      let interferingCoefficient;
+      let tableUsed;
+
+      if (desired.waveform.coded) {
+        desiredCoefficient = tableA2CodedDesiredCoefficient;
+        interferingCoefficient =
+          tableA2InterferingCoefficients[interferer.waveform.family];
+        tableUsed = "Table A-2";
+      } else {
+        desiredCoefficient =
+          tableA1DesiredCoefficients[desired.waveform.family];
+        interferingCoefficient =
+          tableA1InterferingCoefficients[interferer.waveform.family];
+        tableUsed = "Table A-1";
+      }
+
+      const desiredMultiplier = desired.waveform.multiplier;
+      const interferingMultiplier = interferer.waveform.multiplier;
+
+      const desiredTerm =
+        desiredCoefficient * desiredMultiplier * desired.rate;
+
+      const interferingTerm =
+        interferingCoefficient * interferingMultiplier * interferer.rate;
+
+      const minimumSeparation = desiredTerm + interferingTerm;
+
+      return {
+        desired,
+        interferer,
+        desiredCoefficient,
+        interferingCoefficient,
+        desiredMultiplier,
+        interferingMultiplier,
+        desiredTerm,
+        interferingTerm,
+        minimumSeparation,
+        tableUsed
+      };
+    }
+
+    function createDetailsRows(result) {
+      const desiredCodingStatus = result.desired.waveform.coded ? "Coded" : "Uncoded";
+      const interfererCodingStatus = result.interferer.waveform.coded ? "Coded" : "Uncoded";
+
+      return `
+        <tr>
+          <th>Coefficient Table Applied</th>
+          <td>${result.tableUsed}</td>
+        </tr>
+        <tr>
+          <th>Desired Signal</th>
+          <td>${result.desired.name}: ${result.desired.waveform.label} (${desiredCodingStatus})</td>
+        </tr>
+        <tr>
+          <th>Desired Data Rate, R<sub>s</sub></th>
+          <td>${formatNumber(result.desired.rate)} Mbps</td>
+        </tr>
+        <tr>
+          <th>Desired Coefficient, a<sub>s</sub></th>
+          <td>${formatNumber(result.desiredCoefficient, 4)}</td>
+        </tr>
+        <tr>
+          <th>Desired Rate Multiplier, n<sub>s</sub></th>
+          <td>${formatMultiplier(result.desiredMultiplier)}</td>
+        </tr>
+        <tr>
+          <th>Desired Contribution</th>
+          <td>${formatMHz(result.desiredTerm)}</td>
+        </tr>
+        <tr>
+          <th>Interfering Signal</th>
+          <td>${result.interferer.name}: ${result.interferer.waveform.label} (${interfererCodingStatus})</td>
+        </tr>
+        <tr>
+          <th>Interfering Data Rate, R<sub>i</sub></th>
+          <td>${formatNumber(result.interferer.rate)} Mbps</td>
+        </tr>
+        <tr>
+          <th>Interfering Coefficient, a<sub>i</sub></th>
+          <td>${formatNumber(result.interferingCoefficient, 4)}</td>
+        </tr>
+        <tr>
+          <th>Interfering Rate Multiplier, n<sub>i</sub></th>
+          <td>${formatMultiplier(result.interferingMultiplier)}</td>
+        </tr>
+        <tr>
+          <th>Interfering Contribution</th>
+          <td>${formatMHz(result.interferingTerm)}</td>
+        </tr>
+        <tr>
+          <th>Directional Minimum Separation, ΔF<sub>0</sub></th>
+          <td><strong>${formatMHz(result.minimumSeparation)}</strong></td>
+        </tr>
+      `;
+    }
+
+    function createEquation(result) {
+      return `
+        ΔF₀ = (${formatNumber(result.desiredCoefficient, 4)} ×
+        ${formatMultiplier(result.desiredMultiplier)} ×
+        ${formatNumber(result.desired.rate)}) +
+        (${formatNumber(result.interferingCoefficient, 4)} ×
+        ${formatMultiplier(result.interferingMultiplier)} ×
+        ${formatNumber(result.interferer.rate)})
+        = ${formatMHz(result.minimumSeparation)}
+      `;
+    }
+
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = "block";
+      resultsSection.style.display = "none";
+    }
+
+    function clearError() {
+      errorMessage.textContent = "";
+      errorMessage.style.display = "none";
+    }
+
+    function showResults(signal1, signal2, direction1, direction2) {
+      const actualSeparation = Math.abs(signal1.frequency - signal2.frequency);
+      const governingSeparation = Math.max(
+        direction1.minimumSeparation,
+        direction2.minimumSeparation
+      );
+
+      const margin = actualSeparation - governingSeparation;
+      const meetsGuidance = actualSeparation >= governingSeparation;
+      const governingDisplay = formatGoverningSeparation(governingSeparation);
+
+      document.getElementById("actualSeparation").textContent =
+        formatMHz(actualSeparation);
+
+      document.getElementById("signal1DesiredResult").textContent =
+        formatMHz(direction1.minimumSeparation);
+
+      document.getElementById("signal2DesiredResult").textContent =
+        formatMHz(direction2.minimumSeparation);
+
+      document.getElementById("governingResult").textContent =
+        governingDisplay;
+
+      document.getElementById("equation1").textContent = createEquation(direction1);
+      document.getElementById("equation2").textContent = createEquation(direction2);
+
+      document.getElementById("details1").innerHTML = createDetailsRows(direction1);
+      document.getElementById("details2").innerHTML = createDetailsRows(direction2);
+
+      const statusBox = document.getElementById("statusBox");
+      const statusTitle = document.getElementById("statusTitle");
+      const statusText = document.getElementById("statusText");
+      const marginText = document.getElementById("marginText");
+
+      statusBox.classList.remove("meets", "does-not-meet");
+
+      if (meetsGuidance) {
+        statusBox.classList.add("meets");
+        statusTitle.textContent = "MEETS MINIMUM SEPARATION GUIDANCE";
+        statusText.textContent =
+          `Actual center-frequency separation (${formatMHz(actualSeparation)}) is equal to or greater than the governing minimum required separation (${governingDisplay}).`;
+        marginText.textContent =
+          `Available separation margin: ${formatMHz(margin)}.`;
+      } else {
+        statusBox.classList.add("does-not-meet");
+        statusTitle.textContent = "DOES NOT MEET MINIMUM SEPARATION GUIDANCE";
+        statusText.textContent =
+          `Actual center-frequency separation (${formatMHz(actualSeparation)}) is less than the governing minimum required separation (${governingDisplay}).`;
+        marginText.textContent =
+          `Additional separation needed: ${formatMHz(Math.abs(margin))}.`;
+      }
+
+      resultsSection.style.display = "block";
+      resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      clearError();
+
+      const signal1 = getSignal(1);
+      const signal2 = getSignal(2);
+
+      const signal1Error = validateSignal(signal1);
+      const signal2Error = validateSignal(signal2);
+
+      if (signal1Error) {
+        showError(signal1Error);
+        return;
+      }
+
+      if (signal2Error) {
+        showError(signal2Error);
+        return;
+      }
+
+      const direction1 = calculateDirectionalSeparation(signal1, signal2);
+      const direction2 = calculateDirectionalSeparation(signal2, signal1);
+
+      showResults(signal1, signal2, direction1, direction2);
+    });
+
+    clearButton.addEventListener("click", function () {
+      form.reset();
+      clearError();
+      resultsSection.style.display = "none";
+      document.getElementById("frequency1").focus();
+    });
+  </script>
+</body>
+</html>
