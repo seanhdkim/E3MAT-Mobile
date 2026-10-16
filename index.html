@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Application Suite</title>
+
+  <style>
+    :root {
+      --navy: #0b1f3a;
+      --blue: #1f5ea8;
+      --light-blue: #eaf2fb;
+      --border: #cbd5e1;
+      --text: #172033;
+      --muted: #5d6b82;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      background: #f4f7fb;
+    }
+
+    header {
+      background: var(--navy);
+      color: var(--white);
+      padding: 1rem 1.5rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    header p {
+      margin: 0.3rem 0 0;
+      color: #d7e5f6;
+      font-size: 0.9rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      min-height: calc(100vh - 84px);
+    }
+
+    nav {
+      padding: 1rem;
+      background: var(--white);
+      border-right: 1px solid var(--border);
+    }
+
+    .nav-label {
+      margin: 0 0 0.7rem;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .app-button {
+      display: block;
+      width: 100%;
+      margin-bottom: 0.55rem;
+      padding: 0.85rem 0.9rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--white);
+      color: var(--text);
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-align: left;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .app-button:hover,
+    .app-button:focus {
+      border-color: var(--blue);
+      background: var(--light-blue);
+      outline: none;
+    }
+
+    .app-button.active {
+      border-color: var(--blue);
+      background: var(--blue);
+      color: var(--white);
+    }
+
+    main {
+      min-width: 0;
+      padding: 1rem;
+    }
+
+    .app-frame {
+      display: none;
+      width: 100%;
+      height: calc(100vh - 116px);
+      min-height: 650px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--white);
+    }
+
+    .app-frame.active {
+      display: block;
+    }
+
+    @media (max-width: 720px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      nav {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .app-button {
+        display: inline-block;
+        width: auto;
+        margin-right: 0.5rem;
+      }
+
+      .app-frame {
+        height: calc(100vh - 205px);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Application Suite</h1>
+    <p>Select an application from the navigation panel.</p>
+  </header>
+
+  <div class="layout">
+    <nav aria-label="Application navigation">
+      <p class="nav-label">Applications</p>
+
+      <button
+        id="telemetryButton"
+        class="app-button active"
+        type="button"
+        onclick="showApp('telemetry')"
+      >
+        IRIG 106-23 Frequency Separation Calculator
+      </button>
+
+      <button
+        id="secondAppButton"
+        class="app-button"
+        type="button"
+        onclick="showApp('secondApp')"
+      >
+        RF Interference Triangulator
+      </button>
+    </nav>
+
+    <main>
+      <iframe
+        id="telemetry"
+        class="app-frame active"
+        title="Telemetry Separation Calculator"
+        src="IRIG Minimum Frequency Separation Chcek/index.html"
+      ></iframe>
+
+      <iframe
+        id="secondApp"
+        class="app-frame"
+        title="Second Application"
+        src="Interference Triangulator/index.html"
+      ></iframe>
+    </main>
+  </div>
+
+  <script>
+    function showApp(appId) {
+      const apps = document.querySelectorAll(".app-frame");
+      const buttons = document.querySelectorAll(".app-button");
+
+      apps.forEach((app) => {
+        app.classList.toggle("active", app.id === appId);
+      });
+
+      buttons.forEach((button) => {
+        const isSelected =
+          (appId === "telemetry" && button.id === "telemetryButton") ||
+          (appId === "secondApp" && button.id === "secondAppButton");
+
+        button.classList.toggle("active", isSelected);
+      });
+
+      window.location.hash = appId;
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const selectedApp = window.location.hash.replace("#", "");
+
+      if (selectedApp === "secondApp") {
+        showApp("secondApp");
+      } else {
+        showApp("telemetry");
+      }
+    });
+  </script>
+</body>
+</html>
