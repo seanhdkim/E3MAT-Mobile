@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HERO / HERP / HIRF</title>
+
+  <style>
+    :root {
+      --page-background: #e7ebef;
+      --app-background: #ffffff;
+      --panel-background: #f5f7f9;
+      --border: #84909c;
+      --light-border: #c7d0d9;
+      --text: #15202b;
+      --muted-text: #45515d;
+      --primary: #174f91;
+      --primary-hover: #103d73;
+      --secondary: #5d6875;
+      --secondary-hover: #414b56;
+      --success-background: #effaf2;
+      --success-border: #2d7e47;
+      --success-text: #18552d;
+      --error-background: #fff0f0;
+      --error-border: #b62020;
+      --error-text: #861414;
+      --disabled-background: #e5e9ed;
+      --readonly-background: #edf1f4;
+      --focus: #78b5ec;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 22px;
+      background: var(--page-background);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .app {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: 16px;
+      border: 1px solid #71808d;
+      border-radius: 5px;
+      background: var(--app-background);
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.17);
+    }
+
+    .app-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--light-border);
+    }
+
+    .app-header h1 {
+      margin: 0;
+      color: #0e315d;
+      font-size: 22px;
+    }
+
+    .app-header p {
+      max-width: 510px;
+      margin: 3px 0 0;
+      color: var(--muted-text);
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .selection-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 14px 0;
+    }
+
+    .calculation-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      gap: 8px;
+      padding: 7px 10px;
+      border: 1px solid #b7c2cc;
+      border-radius: 4px;
+      background: #f8fafc;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .calculation-toggle:hover {
+      background: #eaf2fa;
+    }
+
+    .calculation-toggle input,
+    .radio-option input {
+      width: 16px;
+      height: 16px;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    fieldset {
+      min-width: 0;
+      min-height: 405px;
+      margin: 0;
+      padding: 14px 12px 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--panel-background);
+    }
+
+    legend {
+      padding: 0 7px;
+      color: #12375f;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .note {
+      min-height: 33px;
+      margin: 0 0 10px;
+      color: var(--muted-text);
+      font-size: 12px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 5px;
+      margin-bottom: 11px;
+    }
+
+    .form-row.two-column {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .radio-group {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 13px;
+      padding: 9px;
+      border: 1px solid var(--light-border);
+      border-radius: 3px;
+      background: #ffffff;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #1e2934;
+      font-size: 13px;
+      font-weight: normal;
+      cursor: pointer;
+    }
+
+    label {
+      color: #1d2935;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    input[type="number"],
+    input[type="text"],
+    select {
+      width: 100%;
+      min-height: 32px;
+      padding: 5px 7px;
+      border: 1px solid #7f8a96;
+      border-radius: 3px;
+      background: #ffffff;
+      color: #121a22;
+      font: inherit;
+    }
+
+    input[type="text"][readonly] {
+      background: var(--readonly-background);
+      color: #111827;
+      font-weight: 600;
+    }
+
+    input:disabled {
+      background: var(--disabled-background);
+      color: #68727c;
+      cursor: not-allowed;
+    }
+
+    input:focus-visible,
+    select:focus-visible,
+    button:focus-visible {
+      outline: 3px solid var(--focus);
+      outline-offset: 1px;
+    }
+
+    .output-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 68px;
+      gap: 7px;
+      align-items: end;
+      margin-bottom: 11px;
+    }
+
+    .output-row.no-unit {
+      grid-template-columns: 1fr;
+    }
+
+    .output-row label {
+      grid-column: 1 / -1;
+      min-height: 34px;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) auto auto;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    button {
+      min-height: 40px;
+      padding: 8px 14px;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      color: #ffffff;
+      font: inherit;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .compute-button {
+      border-color: #103964;
+      background: var(--primary);
+      font-size: 16px;
+    }
+
+    .compute-button:hover {
+      background: var(--primary-hover);
+    }
+
+    .secondary-button {
+      border-color: #46515c;
+      background: var(--secondary);
+    }
+
+    .secondary-button:hover {
+      background: var(--secondary-hover);
+    }
+
+    .status {
+      display: none;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border: 1px solid;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: pre-line;
+    }
+
+    .status.visible {
+      display: block;
+    }
+
+    .status.success {
+      border-color: var(--success-border);
+      background: var(--success-background);
+      color: var(--success-text);
+    }
+
+    .status.error {
+      border-color: var(--error-border);
+      background: var(--error-background);
+      color: var(--error-text);
+    }
+
+    details {
+      margin-top: 14px;
+      padding: 9px 11px;
+      border: 1px solid var(--light-border);
+      border-radius: 4px;
+      background: #f8fafb;
+      color: var(--muted-text);
+      font-size: 12px;
+    }
+
+    summary {
+      color: #153d6c;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .methodology-list {
+      margin: 8px 0 0 18px;
+      padding: 0;
+    }
+
+    .methodology-list li {
+      margin: 4px 0;
+    }
+
+    .footer-note {
+      margin: 12px 0 0;
+      color: #4b5563;
+      font-size: 11px;
+    }
+
+    @media (max-width: 1000px) {
+      .main-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 650px) {
+      body {
+        padding: 10px;
+      }
+
+      .app {
+        padding: 11px;
+      }
+
+      .app-header {
+        flex-direction: column;
+      }
+
+      .app-header p {
+        max-width: none;
+        text-align: left;
+      }
+
+      .selection-row,
+      .main-grid,
+      .actions {
+        grid-template-columns: 1fr;
+      }
+
+      fieldset {
+        min-height: auto;
+      }
+    }
+
+    @media print {
+      body {
+        padding: 0;
+        background: #ffffff;
+      }
+
+      .app {
+        width: 100%;
+        border: 0;
+        box-shadow: none;
+      }
+
+      .actions,
+      .status {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header class="app-header">
+      <div>
+        <h1>HERO / HERP / HIRF</h1>
+      </div>
+
+      <p>
+        Browser implementation of supplied MATLAB application logic.
+        Frequency input is in MHz. Review source inputs, units, and governing
+        technical guidance before operational use.
+      </p>
+    </header>
+
+    <form id="calculatorForm" novalidate>
+      <section class="selection-row" aria-label="Calculation selections">
+        <label class="calculation-toggle">
+          <input id="heroEnabled" type="checkbox" checked />
+          Calculate HERO
+        </label>
+
+        <label class="calculation-toggle">
+          <input id="herpEnabled" type="checkbox" />
+          Calculate HERP
+        </label>
+
+        <label class="calculation-toggle">
+          <input id="hirfEnabled" type="checkbox" />
+          Calculate HIRF
+        </label>
+      </section>
+
+      <section class="main-grid">
+        <!-- Emitter Data -->
+        <fieldset>
+          <legend>Emitter Data</legend>
+
+          <div class="radio-group" aria-label="Emitter power input method">
+            <label class="radio-option">
+              <input type="radio" name="powerMethod" value="eirp" checked />
+              EIRP (dBW)
+            </label>
+
+            <label class="radio-option">
+              <input type="radio" name="powerMethod" value="ptgt" />
+              Pt (W) and Gt (dB)
+            </label>
+
+            <label class="radio-option">
+              <input type="radio" name="powerMethod" value="peak" />
+              Pt pk (W), PW, PRF, and Gt
+            </label>
+          </div>
+
+          <div class="form-row">
+            <label for="eirp">EIRP (dBW)</label>
+            <input
+              id="eirp"
+              type="number"
+              step="any"
+              inputmode="decimal"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="form-row two-column">
+            <div class="form-row">
+              <label for="pt">Pt (W)</label>
+              <input
+                id="pt"
+                type="number"
+                min="0"
+                step="any"
+                inputmode="decimal"
+                autocomplete="off"
+                disabled
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="gt">Gt (dB)</label>
+              <input
+                id="gt"
+                type="number"
+                step="any"
+                inputmode="decimal"
+                autocomplete="off"
+                disabled
+              />
+            </div>
+          </div>
+
+          <div class="form-row two-column">
+            <div class="form-row">
+              <label for="ptPk">Pt pk (W)</label>
+              <input
+                id="ptPk"
+                type="number"
+                min="0"
+                step="any"
+                inputmode="decimal"
+                autocomplete="off"
+                disabled
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="pw">PW (µsec)</label>
+              <input
+                id="pw"
+                type="number"
+                min="0"
+                step="any"
+                inputmode="decimal"
+                autocomplete="off"
+                disabled
+              />
+            </div>
+          </div>
+
+          <div class="form-row two-column">
+            <div class="form-row">
+              <label for="prf">PRF (Hz)</label>
+              <input
+                id="prf"
+                type="number"
+                min="0"
+                step="any"
+                inputmode="decimal"
+                autocomplete="off"
+                disabled
+              />
+            </div>
+
+            <div class="form-row">
+              <label for="gtPeak">Gt (dB)</label>
+              <input
+                id="gtPeak"
+                type="number"
+                step="any"
+                inputmode="decimal"
+                autocomplete="off"
+                disabled
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label for="frequency">Frequency (MHz)</label>
+            <input
+              id="frequency"
+              type="number"
+              min="0"
+              step="any"
+              inputmode="decimal"
+              autocomplete="off"
+            />
+          </div>
+        </fieldset>
+
+        <!-- HERO -->
+        <fieldset>
+          <legend>HERO</legend>
+
+          <p class="note">
+            NOTE: Enter transmitter average power parameters.
+          </p>
+
+          <div class="output-row">
+            <label id="heroSusceptibleLabel" for="heroSusceptible">
+              HERO SUSCEPTIBLE SSD (ft)
+            </label>
+
+            <input id="heroSusceptible" type="text" readonly />
+
+            <select id="heroUnits" aria-label="HERO standoff distance unit">
+              <option value="ft" selected>ft</option>
+              <option value="m">m</option>
+            </select>
+          </div>
+
+          <div class="output-row no-unit">
+            <label for="heroSusceptibleField">
+              E-Field Constraint (V/m - rms)
+            </label>
+
+            <input id="heroSusceptibleField" type="text" readonly />
+          </div>
+
+          <div class="output-row no-unit">
+            <label id="heroUnsafeLabel" for="heroUnsafe">
+              HERO UNSAFE SSD (ft)
+            </label>
+
+            <input id="heroUnsafe" type="text" readonly />
+          </div>
+
+          <div class="output-row no-unit">
+            <label for="heroUnsafeField">
+              E-Field Constraint (V/m - rms)
+            </label>
+
+            <input id="heroUnsafeField" type="text" readonly />
+          </div>
+        </fieldset>
+
+        <!-- HERP -->
+        <fieldset>
+          <legend>HERP</legend>
+
+          <p class="note">
+            NOTE: Enter transmitter average power parameters.
+          </p>
+
+          <div class="radio-group" aria-label="HERP environment">
+            <label class="radio-option">
+              <input
+                type="radio"
+                name="herpEnvironment"
+                value="controlled"
+                checked
+              />
+              Controlled — Zone 1
+            </label>
+
+            <label class="radio-option">
+              <input
+                type="radio"
+                name="herpEnvironment"
+                value="uncontrolled"
+              />
+              Uncontrolled — Zone 0
+            </label>
+          </div>
+
+          <div class="output-row no-unit">
+            <label for="herpEField">E-Field Constraint (V/m - rms)</label>
+            <input id="herpEField" type="text" readonly />
+          </div>
+
+          <div class="output-row no-unit">
+            <label for="herpPowerDensity">
+              Power Density Constraint (mW/cm²)
+            </label>
+            <input id="herpPowerDensity" type="text" readonly />
+          </div>
+
+          <div class="output-row">
+            <label id="herpRangeLabel" for="herpRange">SSD (km)</label>
+
+            <input id="herpRange" type="text" readonly />
+
+            <select id="rangeUnits" aria-label="HERP standoff distance unit">
+              <option value="km" selected>km</option>
+              <option value="m">m</option>
+              <option value="ft">ft</option>
+              <option value="SM">SM</option>
+              <option value="NM">NM</option>
+            </select>
+          </div>
+
+          <div class="output-row no-unit">
+            <label for="herpAverageTime">Averaging Time (min)</label>
+            <input id="herpAverageTime" type="text" readonly />
+          </div>
+        </fieldset>
+
+        <!-- HIRF -->
+        <fieldset>
+          <legend>HIRF</legend>
+
+          <div class="form-row">
+            <label for="hirfEnvironment">HIRF Environment</label>
+
+            <select id="hirfEnvironment">
+              <option value="1" selected>
+                Environment I — Certification Level
+              </option>
+              <option value="2">
+                Environment II — Normal Operation
+              </option>
+              <option value="3">
+                Environment III — Severe Environment
+              </option>
+            </select>
+          </div>
+
+          <div class="output-row no-unit">
+            <label for="hirfPeakField">Peak Field Constraint (V/m)</label>
+            <input id="hirfPeakField" type="text" readonly />
+          </div>
+
+          <div class="output-row">
+            <label id="hirfPeakStandoffLabel" for="hirfPeakStandoff">
+              Peak Constraint Standoff (kft)
+            </label>
+
+            <input id="hirfPeakStandoff" type="text" readonly />
+
+            <select id="hirfPeakUnits" aria-label="Peak HIRF standoff unit">
+              <option value="kft" selected>kft</option>
+              <option value="km">km</option>
+            </select>
+          </div>
+
+          <div class="output-row no-unit">
+            <label for="hirfAverageField">Average Field Constraint (V/m)</label>
+            <input id="hirfAverageField" type="text" readonly />
+          </div>
+
+          <div class="output-row">
+            <label id="hirfAverageStandoffLabel" for="hirfAverageStandoff">
+              Average Constraint Standoff (kft)
+            </label>
+
+            <input id="hirfAverageStandoff" type="text" readonly />
+
+            <select id="hirfAverageUnits" aria-label="Average HIRF standoff unit">
+              <option value="kft" selected>kft</option>
+              <option value="km">km</option>
+            </select>
+          </div>
+        </fieldset>
+      </section>
+
+      <section class="actions" aria-label="Calculator actions">
+        <button class="compute-button" type="submit">
+          Compute Selected Calculations
+        </button>
+
+        <button id="resetButton" class="secondary-button" type="button">
+          Reset
+        </button>
+
+        <button id="selfCheckButton" class="secondary-button" type="button">
+          Run Boundary Self-Checks
+        </button>
+      </section>
+    </form>
+
+    <div
+      id="statusMessage"
+      class="status"
+      role="status"
+      aria-live="polite"
+    ></div>
+
+    <details>
+      <summary>Methodology, Source Version, and Use Notes</summary>
+
+      <ul class="methodology-list">
+        <li>
+          Original MATLAB application title: <strong>HERO/HERP/HIRF v1.2</strong>.
+        </li>
+        <li>
+          Supplied HIRF source version: <strong>v1.0, February 2022</strong>.
+        </li>
+        <li>
+          HERO reference label retained from the supplied application:
+          NAVSEA OP 3565 Vol 2 Rev 19.
+        </li>
+        <li>
+          HERP reference label retained from the supplied application:
+          IEEE Std C95.1-2014.
+        </li>
+        <li>
+          HIRF reference label retained from the supplied application:
+          AC 20-158A, May 2014.
+        </li>
+        <li>
+          The displayed results are calculation aids. Validate source data,
+          units, applicable policy, and technical/safety use through the
+          appropriate review process.
+        </li>
+        <li>
+          HIRF shared frequency boundaries intentionally use the highest
+          applicable peak and average field constraints, matching the supplied
+          MATLAB logic.
+        </li>
+      </ul>
+    </details>
+
+    <p class="footer-note">
+      Web implementation preserves the supplied equations and tables. Any
+      future change to equations, table values, reference versions, or
+      operational use criteria should be independently reviewed and documented.
+    </p>
+  </main>
+
+  <script>
+    "use strict";
+
+    /*
+      HERO / HERP / HIRF Browser Conversion
+
+      Calculations are intentionally separated from the page interface:
+      - Calculation functions accept numeric input and return numeric results.
+      - UI functions read inputs, show results, and display validation messages.
+      - This approach supports verification against the source MATLAB code.
+    */
+
+    const SOURCE_PI = 3.14159;
+
+    const HIRF_ENVIRONMENT_TABLES = {
+      1: [
+        [0.01, 2, 50, 50],
+        [2, 30, 100, 100],
+        [30, 100, 50, 50],
+        [100, 400, 100, 100],
+        [400, 700, 700, 50],
+        [700, 1000, 700, 100],
+        [1000, 2000, 2000, 200],
+        [2000, 6000, 3000, 200],
+        [6000, 8000, 1000, 200],
+        [8000, 12000, 3000, 300],
+        [12000, 18000, 2000, 200],
+        [18000, 40000, 600, 200]
+      ],
+
+      2: [
+        [0.01, 0.5, 20, 20],
+        [0.5, 2, 30, 30],
+        [2, 30, 100, 100],
+        [30, 100, 10, 10],
+        [100, 200, 30, 10],
+        [200, 400, 10, 10],
+        [400, 1000, 700, 40],
+        [1000, 2000, 1300, 160],
+        [2000, 4000, 3000, 120],
+        [4000, 6000, 3000, 160],
+        [6000, 8000, 400, 170],
+        [8000, 12000, 1230, 230],
+        [12000, 18000, 730, 190],
+        [18000, 40000, 600, 150]
+      ],
+
+      3: [
+        [0.01, 0.1, 150, 150],
+        [0.1, 400, 200, 200],
+        [400, 700, 730, 200],
+        [700, 1000, 1400, 240],
+        [1000, 2000, 5000, 250],
+        [2000, 4000, 6000, 490],
+        [4000, 6000, 7200, 400],
+        [6000, 8000, 1100, 170],
+        [8000, 12000, 5000, 330],
+        [12000, 18000, 2000, 330],
+        [18000, 40000, 1000, 420]
+      ]
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    const controls = {
+      calculatorForm: $("calculatorForm"),
+
+      heroEnabled: $("heroEnabled"),
+      herpEnabled: $("herpEnabled"),
+      hirfEnabled: $("hirfEnabled"),
+
+      eirp: $("eirp"),
+      pt: $("pt"),
+      gt: $("gt"),
+      ptPk: $("ptPk"),
+      pw: $("pw"),
+      prf: $("prf"),
+      gtPeak: $("gtPeak"),
+      frequency: $("frequency"),
+
+      heroUnits: $("heroUnits"),
+      heroSusceptible: $("heroSusceptible"),
+      heroSusceptibleField: $("heroSusceptibleField"),
+      heroUnsafe: $("heroUnsafe"),
+      heroUnsafeField: $("heroUnsafeField"),
+      heroSusceptibleLabel: $("heroSusceptibleLabel"),
+      heroUnsafeLabel: $("heroUnsafeLabel"),
+
+      herpEField: $("herpEField"),
+      herpPowerDensity: $("herpPowerDensity"),
+      herpRange: $("herpRange"),
+      herpAverageTime: $("herpAverageTime"),
+      rangeUnits: $("rangeUnits"),
+      herpRangeLabel: $("herpRangeLabel"),
+
+      hirfEnvironment: $("hirfEnvironment"),
+      hirfPeakField: $("hirfPeakField"),
+      hirfPeakStandoff: $("hirfPeakStandoff"),
+      hirfPeakUnits: $("hirfPeakUnits"),
+      hirfPeakStandoffLabel: $("hirfPeakStandoffLabel"),
+      hirfAverageField: $("hirfAverageField"),
+      hirfAverageStandoff: $("hirfAverageStandoff"),
+      hirfAverageUnits: $("hirfAverageUnits"),
+      hirfAverageStandoffLabel: $("hirfAverageStandoffLabel"),
+
+      resetButton: $("resetButton"),
+      selfCheckButton: $("selfCheckButton"),
+      statusMessage: $("statusMessage")
+    };
+
+    /*
+      ------------------------------------------------------------------------
+      General Utility Functions
+      ------------------------------------------------------------------------
+    */
+
+    function selectedRadioValue(name) {
+      const selected = document.querySelector(
+        `input[name="${name}"]:checked`
+      );
+
+      return selected ? selected.value : null;
+    }
+
+    function readFiniteNumber(element, label) {
+      const value = Number.parseFloat(element.value);
+
+      if (!Number.isFinite(value)) {
+        throw new Error(`Enter a valid numeric value for ${label}.`);
+      }
+
+      return value;
+    }
+
+    function requireGreaterThan(value, minimum, label) {
+      if (!(value > minimum)) {
+        throw new Error(`${label} must be greater than ${minimum}.`);
+      }
+
+      return value;
+    }
+
+    function requireGreaterThanOrEqual(value, minimum, label) {
+      if (!(value >= minimum)) {
+        throw new Error(`${label} must be greater than or equal to ${minimum}.`);
+      }
+
+      return value;
+    }
+
+    function formatValue(value) {
+      if (!Number.isFinite(value)) {
+        return "";
+      }
+
+      const magnitude = Math.abs(value);
+
+      if (magnitude === 0) {
+        return "0";
+      }
+
+      if (Number.isInteger(value)) {
+        return String(value);
+      }
+
+      if (magnitude < 0.01 || magnitude >= 1000000) {
+        return value.toExponential(4);
+      }
+
+      if (magnitude < 1) {
+        return value.toFixed(4);
+      }
+
+      if (magnitude < 100) {
+        return value.toFixed(2);
+      }
+
+      if (magnitude < 10000) {
+        return value.toFixed(1);
+      }
+
+      return value.toFixed(0);
+    }
+
+    function clearStatus() {
+      controls.statusMessage.textContent = "";
+      controls.statusMessage.className = "status";
+    }
+
+    function showStatus(messages, statusType) {
+      controls.statusMessage.textContent = messages.join("\n");
+      controls.statusMessage.className = `status visible ${statusType}`;
+    }
+
+    function clearOutputs() {
+      [
+        controls.heroSusceptible,
+        controls.heroSusceptibleField,
+        controls.heroUnsafe,
+        controls.heroUnsafeField,
+        controls.herpEField,
+        controls.herpPowerDensity,
+        controls.herpRange,
+        controls.herpAverageTime,
+        controls.hirfPeakField,
+        controls.hirfPeakStandoff,
+        controls.hirfAverageField,
+        controls.hirfAverageStandoff
+      ].forEach((element) => {
+        element.value = "";
+      });
+    }
+
+    function updatePowerMethodState() {
+      const method = selectedRadioValue("powerMethod");
+
+      controls.eirp.disabled = method !== "eirp";
+
+      controls.pt.disabled = method !== "ptgt";
+      controls.gt.disabled = method !== "ptgt";
+
+      controls.ptPk.disabled = method !== "peak";
+      controls.pw.disabled = method !== "peak";
+      controls.prf.disabled = method !== "peak";
+      controls.gtPeak.disabled = method !== "peak";
+    }
+
+    function updateUnitLabels() {
+      const heroUnit = controls.heroUnits.value;
+      const herpUnit = controls.rangeUnits.value;
+      const peakHirfUnit = controls.hirfPeakUnits.value;
+      const averageHirfUnit = controls.hirfAverageUnits.value;
+
+      controls.heroSusceptibleLabel.textContent =
+        `HERO SUSCEPTIBLE SSD (${heroUnit})`;
+
+      controls.heroUnsafeLabel.textContent =
+        `HERO UNSAFE SSD (${heroUnit})`;
+
+      controls.herpRangeLabel.textContent = `SSD (${herpUnit})`;
+
+      controls.hirfPeakStandoffLabel.textContent =
+        `Peak Constraint Standoff (${peakHirfUnit})`;
+
+      controls.hirfAverageStandoffLabel.textContent =
+        `Average Constraint Standoff (${averageHirfUnit})`;
+    }
+
+    /*
+      ------------------------------------------------------------------------
+      Emitter Power Calculations
+      ------------------------------------------------------------------------
+    */
+
+    function getAverageEirpWattsFromInputs() {
+      const powerMethod = selectedRadioValue("powerMethod");
+
+      if (powerMethod === "eirp") {
+        const eirpDbw = readFiniteNumber(controls.eirp, "EIRP (dBW)");
+        const eirpWatts = Math.pow(10, eirpDbw / 10);
+
+        if (!Number.isFinite(eirpWatts) || eirpWatts <= 0) {
+          throw new Error(
+            "EIRP (dBW) produced an invalid or non-positive EIRP value."
+          );
+        }
+
+        return {
+          averageEirpWatts: eirpWatts,
+          eirpDbw: eirpDbw,
+          method: "EIRP (dBW)"
+        };
+      }
+
+      if (powerMethod === "ptgt") {
+        const transmitterPowerWatts = requireGreaterThan(
+          readFiniteNumber(controls.pt, "Pt (W)"),
+          0,
+          "Pt (W)"
+        );
+
+        const gainDb = readFiniteNumber(controls.gt, "Gt (dB)");
+        const gainLinear = Math.pow(10, gainDb / 10);
+        const averageEirpWatts = transmitterPowerWatts * gainLinear;
+
+        if (!Number.isFinite(averageEirpWatts) || averageEirpWatts <= 0) {
+          throw new Error(
+            "Pt and Gt produced an invalid or non-positive average EIRP value."
+          );
+        }
+
+        return {
+          averageEirpWatts: averageEirpWatts,
+          eirpDbw: 10 * Math.log10(averageEirpWatts),
+          method: "Pt (W) and Gt (dB)"
+        };
+      }
+
+      if (powerMethod === "peak") {
+        const peakPowerWatts = requireGreaterThan(
+          readFiniteNumber(controls.ptPk, "Pt pk (W)"),
+          0,
+          "Pt pk (W)"
+        );
+
+        const pulseWidthMicroseconds = requireGreaterThan(
+          readFiniteNumber(controls.pw, "PW (µsec)"),
+          0,
+          "PW (µsec)"
+        );
+
+        const pulseRepetitionFrequency = requireGreaterThan(
+          readFiniteNumber(controls.prf, "PRF (Hz)"),
+          0,
+          "PRF (Hz)"
+        );
+
+        const gainDb = readFiniteNumber(controls.gtPeak, "Gt (dB)");
+        const pulseWidthSeconds = pulseWidthMicroseconds / 1000000;
+        const dutyFactor = pulseWidthSeconds * pulseRepetitionFrequency;
+
+        /*
+          A duty factor greater than 1 indicates PW × PRF exceeds 100 percent
+          transmission time. This is normally physically invalid for the
+          specified pulsed-emitter input method.
+        */
+        if (dutyFactor > 1 + Number.EPSILON) {
+          throw new Error(
+            "PW × PRF exceeds 1.0. The entered pulse parameters imply a duty factor greater than 100%."
+          );
+        }
+
+        const gainLinear = Math.pow(10, gainDb / 10);
+        const averageEirpWatts =
+          peakPowerWatts *
+          pulseWidthSeconds *
+          pulseRepetitionFrequency *
+          gainLinear;
+
+        if (!Number.isFinite(averageEirpWatts) || averageEirpWatts <= 0) {
+          throw new Error(
+            "Peak-power inputs produced an invalid or non-positive average EIRP value."
+          );
+        }
+
+        return {
+          averageEirpWatts: averageEirpWatts,
+          eirpDbw: 10 * Math.log10(averageEirpWatts),
+          dutyFactor: dutyFactor,
+          method: "Pt pk (W), PW, PRF, and Gt (dB)"
+        };
+      }
+
+      throw new Error("Select an emitter power input method.");
+    }
+
+    /*
+      ------------------------------------------------------------------------
+      HERO Calculation Functions
+      ------------------------------------------------------------------------
+    */
+
+    function getHeroResults(frequencyMHz, averageEirpWatts, unit) {
+      requireGreaterThan(frequencyMHz, 0, "Frequency (MHz)");
+
+      let susceptibleDistanceFeet;
+      let unsafeDistanceFeet;
+      let susceptibleFieldConstraint;
+      let unsafeFieldConstraint;
+
+      if (frequencyMHz >= 0.01 && frequencyMHz < 2) {
+        susceptibleDistanceFeet =
+          4.5 * frequencyMHz * Math.sqrt(averageEirpWatts);
+
+        unsafeDistanceFeet =
+          18 * frequencyMHz * Math.sqrt(averageEirpWatts);
+
+        susceptibleFieldConstraint = 4 / frequencyMHz;
+        unsafeFieldConstraint = 1 / frequencyMHz;
+      } else if (frequencyMHz >= 2 && frequencyMHz < 80) {
+        susceptibleDistanceFeet = 9 * Math.sqrt(averageEirpWatts);
+        unsafeDistanceFeet = 36 * Math.sqrt(averageEirpWatts);
+
+        susceptibleFieldConstraint = 2;
+        unsafeFieldConstraint = 0.5;
+      } else if (frequencyMHz >= 80 && frequencyMHz < 100000) {
+        susceptibleDistanceFeet =
+          (718 / frequencyMHz) * Math.sqrt(averageEirpWatts);
+
+        unsafeDistanceFeet =
+          (2873 / frequencyMHz) * Math.sqrt(averageEirpWatts);
+
+        susceptibleFieldConstraint = 0.025 * frequencyMHz;
+        unsafeFieldConstraint = 0.00625 * frequencyMHz;
+      } else {
+        throw new Error(
+          "HERO frequency must be from 0.01 MHz up to, but not including, 100000 MHz."
+        );
+      }
+
+      let susceptibleDistance = susceptibleDistanceFeet;
+      let unsafeDistance = unsafeDistanceFeet;
+
+      if (unit === "m") {
+        susceptibleDistance *= 0.3048;
+        unsafeDistance *= 0.3048;
+      } else if (unit !== "ft") {
+        throw new Error("Unsupported HERO distance unit.");
+      }
+
+      return {
+        susceptibleDistance: susceptibleDistance,
+        unsafeDistance: unsafeDistance,
+        susceptibleFieldConstraint: susceptibleFieldConstraint,
+        unsafeFieldConstraint: unsafeFieldConstraint,
+        unit: unit
+      };
+    }
+
+    function displayHeroResults(results) {
+      controls.heroSusceptible.value = formatValue(
+        results.susceptibleDistance
+      );
+
+      controls.heroUnsafe.value = formatValue(results.unsafeDistance);
+
+      controls.heroSusceptibleField.value = formatValue(
+        results.susceptibleFieldConstraint
+      );
+
+      controls.heroUnsafeField.value = formatValue(
+        results.unsafeFieldConstraint
+      );
+    }
+
+    /*
+      ------------------------------------------------------------------------
+      HERP Calculation Functions
+      ------------------------------------------------------------------------
+    */
+
+    function getHerpLimits(frequencyMHz, environment) {
+      requireGreaterThan(frequencyMHz, 0, "Frequency (MHz)");
+
+      let eFieldConstraint;
+      let powerDensityConstraint;
+      let averagingTimeMinutes;
+
+      if (environment === "controlled") {
+        if (frequencyMHz >= 0.1 && frequencyMHz < 1) {
+          eFieldConstraint = 1842;
+          powerDensityConstraint = 900;
+          averagingTimeMinutes = 6;
+        } else if (frequencyMHz >= 1 && frequencyMHz < 30) {
+          eFieldConstraint = 1842 / frequencyMHz;
+          powerDensityConstraint = 0.1 * (9000 / Math.pow(frequencyMHz, 2));
+          averagingTimeMinutes = 6;
+        } else if (frequencyMHz >= 30 && frequencyMHz < 100) {
+          eFieldConstraint = 61.4;
+          powerDensityConstraint = 1;
+          averagingTimeMinutes = 6;
+        } else if (frequencyMHz >= 100 && frequencyMHz < 300) {
+          eFieldConstraint = 61.4;
+          powerDensityConstraint = 1;
+          averagingTimeMinutes = 6;
+        } else if (frequencyMHz >= 300 && frequencyMHz < 3000) {
+          powerDensityConstraint = (0.1 * frequencyMHz) / 30;
+          eFieldConstraint = Math.sqrt(powerDensityConstraint * 10 * 377);
+          averagingTimeMinutes = 6;
+        } else if (frequencyMHz >= 3000 && frequencyMHz < 30000) {
+          powerDensityConstraint = 10;
+          eFieldConstraint = Math.sqrt(powerDensityConstraint * 10 * 377);
+          averagingTimeMinutes =
+            19.63 / Math.pow(frequencyMHz / 1000, 1.079);
+        } else if (frequencyMHz >= 30000 && frequencyMHz < 300000) {
+          powerDensityConstraint = 10;
+          eFieldConstraint = Math.sqrt(powerDensityConstraint * 10 * 377);
+          averagingTimeMinutes =
+            2.524 / Math.pow(frequencyMHz / 1000, 0.476);
+        } else {
+          throw new Error(
+            "Controlled HERP frequency must be from 0.1 MHz up to, but not including, 300000 MHz."
+          );
+        }
+      } else if (environment === "uncontrolled") {
+        if (frequencyMHz >= 0.1 && frequencyMHz < 1.34) {
+          eFieldConstraint = 614;
+          powerDensityConstraint = 100;
+          averagingTimeMinutes = 6;
+        } else if (frequencyMHz >= 1.34 && frequencyMHz < 3) {
+          eFieldConstraint = 823.8 / frequencyMHz;
+          powerDensityConstraint = 180 / Math.pow(frequencyMHz, 2);
+          averagingTimeMinutes = Math.pow(frequencyMHz, 2) / 0.3;
+        } else if (frequencyMHz >= 3 && frequencyMHz < 30) {
+          eFieldConstraint = 823.8 / frequencyMHz;
+          powerDensityConstraint = 180 / Math.pow(frequencyMHz, 2);
+          averagingTimeMinutes = 30;
+        } else if (frequencyMHz >= 30 && frequencyMHz < 100) {
+          eFieldConstraint = 27.5;
+          powerDensityConstraint = 0.2;
+          averagingTimeMinutes = 30;
+        } else if (frequencyMHz >= 100 && frequencyMHz < 400) {
+          eFieldConstraint = 27.5;
+          powerDensityConstraint = 0.2;
+          averagingTimeMinutes = 30;
+        } else if (frequencyMHz >= 400 && frequencyMHz < 2000) {
+          powerDensityConstraint = frequencyMHz / 2000;
+          eFieldConstraint = Math.sqrt(powerDensityConstraint * 10 * 377);
+          averagingTimeMinutes = 30;
+        } else if (frequencyMHz >= 2000 && frequencyMHz < 5000) {
+          powerDensityConstraint = 1;
+          eFieldConstraint = Math.sqrt(powerDensityConstraint * 10 * 377);
+          averagingTimeMinutes = 30;
+        } else if (frequencyMHz >= 5000 && frequencyMHz < 30000) {
+          powerDensityConstraint = 1;
+          eFieldConstraint = Math.sqrt(powerDensityConstraint * 10 * 377);
+          averagingTimeMinutes = 150 / (frequencyMHz / 1000);
+        } else if (frequencyMHz >= 30000 && frequencyMHz < 100000) {
+          powerDensityConstraint = 1;
+          eFieldConstraint = Math.sqrt(powerDensityConstraint * 10 * 377);
+          averagingTimeMinutes =
+            25.24 / Math.pow(frequencyMHz / 1000, 0.476);
+        } else if (frequencyMHz >= 100000 && frequencyMHz < 300000) {
+          powerDensityConstraint = (90 * frequencyMHz - 7000) / 2000;
+          eFieldConstraint = Math.sqrt(powerDensityConstraint * 10 * 377);
+
+          averagingTimeMinutes =
+            5048 /
+            (
+              (9 * frequencyMHz / 1000 - 700) *
+              Math.pow(frequencyMHz / 1000, 0.476)
+            );
+        } else {
+          throw new Error(
+            "Uncontrolled HERP frequency must be from 0.1 MHz up to, but not including, 300000 MHz."
+          );
+        }
+      } else {
+        throw new Error("Select a valid HERP environment.");
+      }
+
+      return {
+        eFieldConstraint: eFieldConstraint,
+        powerDensityConstraint: powerDensityConstraint,
+        averagingTimeMinutes: averagingTimeMinutes
+      };
+    }
+
+    function convertHerpRangeFromMeters(rangeMeters, unit) {
+      switch (unit) {
+        case "km":
+          return rangeMeters / 1000;
+
+        case "m":
+          return rangeMeters;
+
+        case "ft":
+          return rangeMeters * 3.28083;
+
+        case "SM":
+          return rangeMeters * 0.0006213712;
+
+        case "NM":
+          return rangeMeters * 0.0005399568;
+
+        default:
+          throw new Error("Unsupported HERP standoff distance unit.");
+      }
+    }
+
+    function getHerpResults(
+      frequencyMHz,
+      averageEirpWatts,
+      environment,
+      rangeUnit
+    ) {
+      const limits = getHerpLimits(frequencyMHz, environment);
+
+      /*
+        Source MATLAB equation:
+        rng = sqrt(nn/(pdco*10*4*3.14159));
+
+        SOURCE_PI remains 3.14159 instead of Math.PI to preserve the
+        supplied MATLAB implementation's calculation behavior.
+      */
+      const rangeMeters = Math.sqrt(
+        averageEirpWatts /
+        (
+          limits.powerDensityConstraint *
+          10 *
+          4 *
+          SOURCE_PI
+        )
+      );
+
+      return {
+        eFieldConstraint: limits.eFieldConstraint,
+        powerDensityConstraint: limits.powerDensityConstraint,
+        averagingTimeMinutes: limits.averagingTimeMinutes,
+        range: convertHerpRangeFromMeters(rangeMeters, rangeUnit),
+        rangeUnit: rangeUnit
+      };
+    }
+
+    function displayHerpResults(results) {
+      controls.herpEField.value = formatValue(results.eFieldConstraint);
+
+      controls.herpPowerDensity.value = formatValue(
+        results.powerDensityConstraint
+      );
+
+      controls.herpRange.value = formatValue(results.range);
+
+      controls.herpAverageTime.value = formatValue(
+        results.averagingTimeMinutes
+      );
+    }
+
+    /*
+      ------------------------------------------------------------------------
+      HIRF Calculation Functions
+      ------------------------------------------------------------------------
+    */
+
+    function getHirfResults(environment, eirpDbw, frequencyMHz) {
+      requireGreaterThan(frequencyMHz, 0, "Frequency (MHz)");
+
+      const environmentTable = HIRF_ENVIRONMENT_TABLES[environment];
+
+      if (!environmentTable) {
+        throw new Error(
+          "HIRF Environment is invalid. Select Environment I, II, or III."
+        );
+      }
+
+      /*
+        MATLAB source:
+        ind = find(freq >= envTable(:,1) & freq <= envTable(:,2));
+
+        At a shared endpoint, two rows can match. The source then selects the
+        maximum peak and average constraints independently across both rows.
+      */
+      const matches = environmentTable.filter(
+        ([minimumFrequency, maximumFrequency]) =>
+          frequencyMHz >= minimumFrequency &&
+          frequencyMHz <= maximumFrequency
+      );
+
+      if (matches.length === 0) {
+        throw new Error(
+          "HIRF frequency must be from 0.01 MHz through 40000 MHz."
+        );
+      }
+
+      const peakFieldConstraint = Math.max(
+        ...matches.map((row) => row[2])
+      );
+
+      const averageFieldConstraint = Math.max(
+        ...matches.map((row) => row[3])
+      );
+
+      const eirpWatts = Math.pow(10, eirpDbw / 10);
+
+      if (!Number.isFinite(eirpWatts) || eirpWatts <= 0) {
+        throw new Error(
+          "HIRF calculation received an invalid or non-positive EIRP value."
+        );
+      }
+
+      /*
+        Source MATLAB equations:
+        peakRng = sqrt(10^(eirp/10)*377/4/pi/peak^2)/1000;
+        avgRng  = sqrt(10^(eirp/10)*377/4/pi/avg^2)/1000;
+
+        Results are in kilometers.
+      */
+      const peakRangeKm =
+        Math.sqrt(
+          (eirpWatts * 377) /
+          (4 * Math.PI * Math.pow(peakFieldConstraint, 2))
+        ) / 1000;
+
+      const averageRangeKm =
+        Math.sqrt(
+          (eirpWatts * 377) /
+          (4 * Math.PI * Math.pow(averageFieldConstraint, 2))
+        ) / 1000;
+
+      return {
+        peakFieldConstraint: peakFieldConstraint,
+        peakRangeKm: peakRangeKm,
+        averageFieldConstraint: averageFieldConstraint,
+        averageRangeKm: averageRangeKm
+      };
+    }
+
+    function convertHirfRangeFromKm(rangeKm, unit) {
+      /*
+        MATLAB source conversion:
+        if popup value is "kft"
+            displayedRange = rangeKm / .3048;
+        else
+            displayedRange = rangeKm;
+        end
+
+        Because 1 km = 3.28084 kft, rangeKm / 0.3048 returns kft.
+      */
+      if (unit === "kft") {
+        return rangeKm / 0.3048;
+      }
+
+      if (unit === "km") {
+        return rangeKm;
+      }
+
+      throw new Error("Unsupported HIRF standoff distance unit.");
+    }
+
+    function displayHirfResults(results) {
+      const peakUnit = controls.hirfPeakUnits.value;
+      const averageUnit = controls.hirfAverageUnits.value;
+
+      controls.hirfPeakField.value = formatValue(
+        results.peakFieldConstraint
+      );
+
+      controls.hirfAverageField.value = formatValue(
+        results.averageFieldConstraint
+      );
+
+      controls.hirfPeakStandoff.value = formatValue(
+        convertHirfRangeFromKm(results.peakRangeKm, peakUnit)
+      );
+
+      controls.hirfAverageStandoff.value = formatValue(
+        convertHirfRangeFromKm(results.averageRangeKm, averageUnit)
+      );
+    }
+
+    /*
+      ------------------------------------------------------------------------
+      UI Compute, Reset, and Self-Check Functions
+      ------------------------------------------------------------------------
+    */
+
+    function computeSelectedCalculations() {
+      clearStatus();
+      clearOutputs();
+
+      const selectedCalculationNames = [];
+
+      if (controls.heroEnabled.checked) {
+        selectedCalculationNames.push("HERO");
+      }
+
+      if (controls.herpEnabled.checked) {
+        selectedCalculationNames.push("HERP");
+      }
+
+      if (controls.hirfEnabled.checked) {
+        selectedCalculationNames.push("HIRF");
+      }
+
+      if (selectedCalculationNames.length === 0) {
+        showStatus(
+          ["Select at least one calculation type: HERO, HERP, or HIRF."],
+          "error"
+        );
+        return;
+      }
+
+      let frequencyMHz;
+      let emitterData;
+
+      try {
+        frequencyMHz = requireGreaterThan(
+          readFiniteNumber(controls.frequency, "Frequency (MHz)"),
+          0,
+          "Frequency (MHz)"
+        );
+
+        emitterData = getAverageEirpWattsFromInputs();
+      } catch (error) {
+        showStatus([error.message], "error");
+        return;
+      }
+
+      const completed = [];
+      const errors = [];
+
+      if (controls.heroEnabled.checked) {
+        try {
+          const heroResults = getHeroResults(
+            frequencyMHz,
+            emitterData.averageEirpWatts,
+            controls.heroUnits.value
+          );
+
+          displayHeroResults(heroResults);
+          completed.push("HERO");
+        } catch (error) {
+          errors.push(`HERO: ${error.message}`);
+        }
+      }
+
+      if (controls.herpEnabled.checked) {
+        try {
+          const herpResults = getHerpResults(
+            frequencyMHz,
+            emitterData.averageEirpWatts,
+            selectedRadioValue("herpEnvironment"),
+            controls.rangeUnits.value
+          );
+
+          displayHerpResults(herpResults);
+          completed.push("HERP");
+        } catch (error) {
+          errors.push(`HERP: ${error.message}`);
+        }
+      }
+
+      if (controls.hirfEnabled.checked) {
+        try {
+          const hirfResults = getHirfResults(
+            Number.parseInt(controls.hirfEnvironment.value, 10),
+            emitterData.eirpDbw,
+            frequencyMHz
+          );
+
+          displayHirfResults(hirfResults);
+          completed.push("HIRF");
+        } catch (error) {
+          errors.push(`HIRF: ${error.message}`);
+        }
+      }
+
+      const messages = [];
+
+      if (completed.length > 0) {
+        messages.push(
+          `Completed: ${completed.join(", ")}. Power method: ${emitterData.method}.`
+        );
+
+        if (typeof emitterData.dutyFactor === "number") {
+          messages.push(
+            `Pulse duty factor: ${formatValue(emitterData.dutyFactor * 100)}%.`
+          );
+        }
+      }
+
+      if (errors.length > 0) {
+        messages.push(...errors);
+        showStatus(messages, "error");
+      } else {
+        showStatus(messages, "success");
+      }
+    }
+
+    function resetCalculator() {
+      controls.calculatorForm.reset();
+      clearOutputs();
+      clearStatus();
+      updatePowerMethodState();
+      updateUnitLabels();
+    }
+
+    function assertSelfCheck(condition, message) {
+      if (!condition) {
+        throw new Error(message);
+      }
+    }
+
+    function assertClose(actual, expected, tolerance, message) {
+      if (Math.abs(actual - expected) > tolerance) {
+        throw new Error(
+          `${message} Expected ${expected}; received ${actual}.`
+        );
+      }
+    }
+
+    function runBoundarySelfChecks() {
+      clearStatus();
+
+      try {
+        const testEirpWatts = 1;
+
+        /*
+          HERO boundary checks:
+          0.01 MHz, 2 MHz, and 80 MHz are formula transitions.
+        */
+        const heroAt001 = getHeroResults(0.01, testEirpWatts, "ft");
+        assertClose(
+          heroAt001.susceptibleDistance,
+          0.045,
+          1e-12,
+          "HERO check failed at 0.01 MHz."
+        );
+
+        const heroAt2 = getHeroResults(2, testEirpWatts, "ft");
+        assertClose(
+          heroAt2.susceptibleDistance,
+          9,
+          1e-12,
+          "HERO check failed at 2 MHz."
+        );
+
+        const heroAt80 = getHeroResults(80, testEirpWatts, "ft");
+        assertClose(
+          heroAt80.susceptibleDistance,
+          718 / 80,
+          1e-12,
+          "HERO check failed at 80 MHz."
+        );
+
+        /*
+          Controlled HERP formula boundaries:
+          0.1, 1, 30, 100, 300, 3000, and 30000 MHz.
+        */
+        [
+          0.1,
+          1,
+          30,
+          100,
+          300,
+          3000,
+          30000
+        ].forEach((frequency) => {
+          const result = getHerpLimits(frequency, "controlled");
+
+          assertSelfCheck(
+            Number.isFinite(result.eFieldConstraint) &&
+            Number.isFinite(result.powerDensityConstraint) &&
+            Number.isFinite(result.averagingTimeMinutes),
+            `Controlled HERP check failed at ${frequency} MHz.`
+          );
+        });
+
+        const controlledAt1 = getHerpLimits(1, "controlled");
+        assertClose(
+          controlledAt1.powerDensityConstraint,
+          900,
+          1e-12,
+          "Controlled HERP power-density check failed at 1 MHz."
+        );
+
+        const controlledAt30 = getHerpLimits(30, "controlled");
+        assertClose(
+          controlledAt30.eFieldConstraint,
+          61.4,
+          1e-12,
+          "Controlled HERP E-field check failed at 30 MHz."
+        );
+
+        /*
+          Uncontrolled HERP formula boundaries:
+          0.1, 1.34, 3, 30, 100, 400, 2000, 5000, 30000, and 100000 MHz.
+        */
+        [
+          0.1,
+          1.34,
+          3,
+          30,
+          100,
+          400,
+          2000,
+          5000,
+          30000,
+          100000
+        ].forEach((frequency) => {
+          const result = getHerpLimits(frequency, "uncontrolled");
+
+          assertSelfCheck(
+            Number.isFinite(result.eFieldConstraint) &&
+            Number.isFinite(result.powerDensityConstraint) &&
+            Number.isFinite(result.averagingTimeMinutes),
+            `Uncontrolled HERP check failed at ${frequency} MHz.`
+          );
+        });
+
+        /*
+          HIRF table-boundary checks. All endpoints are inclusive by design.
+        */
+        const hirfBoundaries = [
+          0.01,
+          0.1,
+          0.5,
+          2,
+          30,
+          100,
+          200,
+          400,
+          700,
+          1000,
+          2000,
+          4000,
+          6000,
+          8000,
+          12000,
+          18000,
+          40000
+        ];
+
+        [1, 2, 3].forEach((environment) => {
+          hirfBoundaries.forEach((frequency) => {
+            const table = HIRF_ENVIRONMENT_TABLES[environment];
+            const appliesToEnvironment = table.some(
+              ([minimumFrequency, maximumFrequency]) =>
+                frequency >= minimumFrequency &&
+                frequency <= maximumFrequency
+            );
+
+            if (appliesToEnvironment) {
+              const result = getHirfResults(environment, 100, frequency);
+
+              assertSelfCheck(
+                Number.isFinite(result.peakFieldConstraint) &&
+                Number.isFinite(result.averageFieldConstraint) &&
+                Number.isFinite(result.peakRangeKm) &&
+                Number.isFinite(result.averageRangeKm),
+                `HIRF Environment ${environment} check failed at ${frequency} MHz.`
+              );
+            }
+          });
+        });
+
+        /*
+          HIRF shared-boundary checks. The supplied MATLAB logic uses the
+          highest values from both matching rows.
+        */
+        const hirfEnvironment1At2 = getHirfResults(1, 100, 2);
+        assertClose(
+          hirfEnvironment1At2.peakFieldConstraint,
+          100,
+          1e-12,
+          "HIRF Environment I peak check failed at 2 MHz."
+        );
+
+        const hirfEnvironment2At400 = getHirfResults(2, 100, 400);
+        assertClose(
+          hirfEnvironment2At400.peakFieldConstraint,
+          700,
+          1e-12,
+          "HIRF Environment II peak check failed at 400 MHz."
+        );
+
+        assertClose(
+          hirfEnvironment2At400.averageFieldConstraint,
+          40,
+          1e-12,
+          "HIRF Environment II average check failed at 400 MHz."
+        );
+
+        showStatus(
+          [
+            "Boundary self-checks passed.",
+            "HERO, HERP, and HIRF frequency-transition calculations returned valid expected results."
+          ],
+          "success"
+        );
+      } catch (error) {
+        showStatus(
+          [`Boundary self-check failed: ${error.message}`],
+          "error"
+        );
+      }
+    }
+
+    /*
+      ------------------------------------------------------------------------
+      Event Registration and Initial State
+      ------------------------------------------------------------------------
+    */
+
+    document
+      .querySelectorAll('input[name="powerMethod"]')
+      .forEach((radio) => {
+        radio.addEventListener("change", () => {
+          updatePowerMethodState();
+          clearStatus();
+        });
+      });
+
+    [
+      controls.heroUnits,
+      controls.rangeUnits,
+      controls.hirfPeakUnits,
+      controls.hirfAverageUnits
+    ].forEach((control) => {
+      control.addEventListener("change", updateUnitLabels);
+    });
+
+    controls.calculatorForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      computeSelectedCalculations();
+    });
+
+    controls.resetButton.addEventListener("click", resetCalculator);
+
+    controls.selfCheckButton.addEventListener(
+      "click",
+      runBoundarySelfChecks
+    );
+
+    updatePowerMethodState();
+    updateUnitLabels();
+  </script>
+</body>
+</html>
