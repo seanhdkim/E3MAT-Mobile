@@ -134,7 +134,7 @@
       }
 
       .app-frame {
-        height: calc(100vh - 205px);
+        height: calc(100vh - 250px);
       }
     }
   </style>
@@ -142,7 +142,7 @@
 
 <body>
   <header>
-    <h1>E3MAT Mobile App Suite</h1>
+    <h1>E3MAT Mobile</h1>
     <p>Select an application from the navigation panel.</p>
   </header>
 
@@ -151,21 +151,27 @@
       <p class="nav-label">Applications</p>
 
       <button
-        id="telemetryButton"
         class="app-button active"
         type="button"
-        onclick="showApp('telemetry')"
+        data-app="telemetry"
       >
         IRIG 106-23 Frequency Separation Calculator
       </button>
 
       <button
-        id="secondAppButton"
         class="app-button"
         type="button"
-        onclick="showApp('secondApp')"
+        data-app="triangulator"
       >
         RF Interference Triangulator
+      </button>
+
+      <button
+        class="app-button"
+        type="button"
+        data-app="heroHerpHirf"
+      >
+        HERO HERP HIRF
       </button>
     </nav>
 
@@ -173,46 +179,68 @@
       <iframe
         id="telemetry"
         class="app-frame active"
-        title="Telemetry Separation Calculator"
+        title="IRIG 106-23 Frequency Separation Calculator"
         src="IRIG Minimum Frequency Separation Chcek/index.html"
       ></iframe>
 
       <iframe
-        id="secondApp"
+        id="triangulator"
         class="app-frame"
-        title="Second Application"
+        title="RF Interference Triangulator"
         src="Interference Triangulator/index.html"
+      ></iframe>
+
+      <iframe
+        id="heroHerpHirf"
+        class="app-frame"
+        title="HERO HERP HIRF"
+        src="HERO HERP HIRF/index.html"
       ></iframe>
     </main>
   </div>
 
   <script>
-    function showApp(appId) {
-      const apps = document.querySelectorAll(".app-frame");
-      const buttons = document.querySelectorAll(".app-button");
+    const defaultApp = "telemetry";
 
-      apps.forEach((app) => {
-        app.classList.toggle("active", app.id === appId);
+    function showApp(appId) {
+      const selectedFrame = document.getElementById(appId);
+
+      if (!selectedFrame) {
+        appId = defaultApp;
+      }
+
+      document.querySelectorAll(".app-frame").forEach((frame) => {
+        frame.classList.toggle("active", frame.id === appId);
       });
 
-      buttons.forEach((button) => {
-        const isSelected =
-          (appId === "telemetry" && button.id === "telemetryButton") ||
-          (appId === "secondApp" && button.id === "secondAppButton");
-
-        button.classList.toggle("active", isSelected);
+      document.querySelectorAll(".app-button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.app === appId);
       });
 
       window.location.hash = appId;
     }
 
+    document.querySelectorAll(".app-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        showApp(button.dataset.app);
+      });
+    });
+
     window.addEventListener("DOMContentLoaded", () => {
       const selectedApp = window.location.hash.replace("#", "");
 
-      if (selectedApp === "secondApp") {
-        showApp("secondApp");
+      if (document.getElementById(selectedApp)) {
+        showApp(selectedApp);
       } else {
-        showApp("telemetry");
+        showApp(defaultApp);
+      }
+    });
+
+    window.addEventListener("hashchange", () => {
+      const selectedApp = window.location.hash.replace("#", "");
+
+      if (document.getElementById(selectedApp)) {
+        showApp(selectedApp);
       }
     });
   </script>
