@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timezone Clocks</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #000000;
+      color: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 20px;
+      width: 100%;
+      height: 100%;
+      max-width: 1600px;
+      max-height: 900px;
+    }
+
+    .clock-block {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 10px;
+      border-radius: 8px;
+      user-select: none;
+    }
+
+    .clock-name {
+      font-weight: bold;
+      color: #ffffff;
+      /* Scales dynamically like the MATLAB resizeCallback */
+      font-size: clamp(16px, 3vw, 42px);
+      margin-bottom: 8px;
+      white-space: nowrap;
+    }
+
+    .clock-time {
+      font-weight: bold;
+      color: #ff0000;
+      /* Scales dynamically like the MATLAB resizeCallback */
+      font-size: clamp(24px, 4.5vw, 64px);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 1px;
+    }
+
+    /* Responsive adjustments for smaller screens */
+    @media (max-width: 768px) {
+      .grid-container {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(6, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="grid-container" id="clockGrid"></div>
+
+  <script>
+    const clocks = [
+      { name: 'PMRF', tz: 'Pacific/Honolulu' },
+      { name: 'PSCA', tz: 'America/Anchorage' },
+      { name: 'VSFB', tz: 'America/Los_Angeles' },
+      { name: 'MDIOC', tz: 'America/Denver' },
+      { name: 'Huntsville', tz: 'America/Chicago' },
+      { name: 'Dahlgren', tz: 'America/New_York' },
+      { name: 'Zulu (UTC)', tz: 'UTC' },
+      { name: 'Poland', tz: 'Europe/Warsaw' },
+      { name: 'Romania', tz: 'Europe/Bucharest' },
+      { name: 'Seoul', tz: 'Asia/Seoul' },
+      { name: 'Guam', tz: 'Pacific/Guam' },
+      { name: 'RTS', tz: 'Pacific/Kwajalein' }
+    ];
+
+    const grid = document.getElementById('clockGrid');
+    const timeElements = [];
+
+    // Initialize clock DOM elements
+    clocks.forEach((clock) => {
+      const block = document.createElement('div');
+      block.className = 'clock-block';
+
+      const nameLabel = document.createElement('div');
+      nameLabel.className = 'clock-name';
+      nameLabel.textContent = clock.name;
+
+      const timeLabel = document.createElement('div');
+      timeLabel.className = 'clock-time';
+      timeLabel.textContent = '00:00';
+
+      block.appendChild(nameLabel);
+      block.appendChild(timeLabel);
+      grid.appendChild(block);
+
+      timeElements.push({ element: timeLabel, tz: clock.tz });
+    });
+
+    // Update times every second (automatically handles Daylight Saving Time via IANA timezones)
+    function updateTimesDST() {
+      const now = new Date();
+
+      timeElements.forEach((item) => {
+        const formatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: item.tz,
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        });
+
+        item.element.textContent = formatter.format(now);
+      });
+    }
+
+    // Initial run and 1-second interval timer
+    updateTimesDST();
+    setInterval(updateTimesDST, 1000);
+  </script>
+
+</body>
+</html>
