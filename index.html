@@ -134,7 +134,7 @@
       }
 
       .app-frame {
-        height: calc(100vh - 300px);
+        height: calc(100vh - 350px);
       }
     }
   </style>
@@ -181,6 +181,14 @@
       >
         Time Zone Clock
       </button>
+
+      <button
+        class="app-button"
+        type="button"
+        data-app="rfFieldCalculator"
+      >
+        RF Field Calculator
+      </button>
     </nav>
 
     <main>
@@ -210,6 +218,13 @@
         class="app-frame"
         title="Time Zone Clock"
         src="Time Zone Clock/index.html"
+      ></iframe>
+
+      <iframe
+        id="rfFieldCalculator"
+        class="app-frame"
+        title="RF Field Calculator"
+        src="RF Field Calculator/index.html"
       ></iframe>
     </main>
   </div>
