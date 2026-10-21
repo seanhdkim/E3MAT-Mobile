@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RF Field Calculator</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #121c2e;
+      --panel-2: #17243a;
+      --border: #2b3b55;
+      --text: #edf3fb;
+      --muted: #aebed0;
+      --accent: #45b3e7;
+      --accent-dark: #147dac;
+      --good: #62d196;
+      --warn: #f0c35a;
+      --danger: #ee7b7b;
+      --input: #0d1726;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #08111e, #101c30 55%, #0b1422);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.45;
+    }
+
+    .container {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 44px;
+    }
+
+    header {
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: clamp(1.7rem, 4vw, 2.5rem);
+      letter-spacing: 0.02em;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 1.35rem;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      color: var(--accent);
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    .subtitle,
+    .note,
+    .small {
+      color: var(--muted);
+    }
+
+    .small {
+      font-size: 0.86rem;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tab-button {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 10px 13px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .tab-button:hover {
+      background: var(--panel-2);
+      border-color: var(--accent);
+    }
+
+    .tab-button.active {
+      background: var(--accent-dark);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .tab-panel {
+      display: none;
+      background: rgba(18, 28, 46, 0.97);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 22px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 15px;
+      margin: 18px 0;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    input,
+    select {
+      width: 100%;
+      border: 1px solid var(--border);
+      background: var(--input);
+      color: var(--text);
+      border-radius: 7px;
+      padding: 10px;
+      font-size: 1rem;
+    }
+
+    input:focus,
+    select:focus {
+      outline: 2px solid rgba(69, 179, 231, 0.45);
+      border-color: var(--accent);
+    }
+
+    button.calculate {
+      border: 0;
+      border-radius: 7px;
+      background: var(--accent);
+      color: #06101a;
+      cursor: pointer;
+      font-weight: 800;
+      padding: 11px 18px;
+      font-size: 1rem;
+      margin: 4px 0 16px;
+    }
+
+    button.calculate:hover {
+      background: #75c9ef;
+    }
+
+    .results {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .result-card {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 14px;
+    }
+
+    .result-card .label {
+      color: var(--muted);
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.045em;
+    }
+
+    .result-card .value {
+      color: white;
+      font-size: 1.2rem;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .formula {
+      margin-top: 18px;
+      border-left: 3px solid var(--accent);
+      background: rgba(69, 179, 231, 0.07);
+      padding: 11px 13px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .status-good {
+      color: var(--good) !important;
+    }
+
+    .status-warn {
+      color: var(--warn) !important;
+    }
+
+    .status-danger {
+      color: var(--danger) !important;
+    }
+
+    .footer-note {
+      margin-top: 22px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: rgba(18, 28, 46, 0.8);
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        width: min(100% - 20px, 1180px);
+        padding-top: 18px;
+      }
+
+      .tab-panel {
+        padding: 16px;
+      }
+
+      .tab-button {
+        flex: 1 1 calc(50% - 8px);
+        font-size: 0.84rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <header>
+      <h1>RF Field Calculator</h1>
+      <p class="subtitle">
+        Offline RF planning and reference calculations for frequency, power, propagation,
+        antennas, transmission lines, and link budgets.
+      </p>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="RF calculator tools">
+      <button class="tab-button active" data-tab="frequency" role="tab">Frequency / Wavelength</button>
+      <button class="tab-button" data-tab="power" role="tab">dBm / Watts</button>
+      <button class="tab-button" data-tab="fspl" role="tab">FSPL</button>
+      <button class="tab-button" data-tab="linkbudget" role="tab">Link Budget</button>
+      <button class="tab-button" data-tab="antenna" role="tab">Antenna Length</button>
+      <button class="tab-button" data-tab="vswr" role="tab">VSWR / Return Loss</button>
+      <button class="tab-button" data-tab="coax" role="tab">Coax Loss</button>
+    </nav>
+
+    <!-- Frequency / Wavelength -->
+    <section class="tab-panel active" id="frequency">
+      <h2>Frequency ↔ Wavelength</h2>
+      <p class="note">Calculates free-space wavelength using the speed of light.</p>
+
+      <div class="grid">
+        <div class="field">
+          <label for="freqValue">Frequency</label>
+          <input id="freqValue" type="number" min="0" step="any" value="100" />
+        </div>
+        <div class="field">
+          <label for="freqUnit">Frequency Unit</label>
+          <select id="freqUnit">
+            <option value="1">Hz</option>
+            <option value="1000">kHz</option>
+            <option value="1000000" selected>MHz</option>
+            <option value="1000000000">GHz</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="calculate" onclick="calculateFrequency()">Calculate Wavelength</button>
+
+      <div class="results">
+        <div class="result-card">
+          <span class="label">Frequency in Hz</span>
+          <span class="value" id="freqHzOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Wavelength</span>
+          <span class="value" id="wavelengthOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Quarter-Wave Reference</span>
+          <span class="value" id="quarterWaveOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Half-Wave Reference</span>
+          <span class="value" id="halfWaveOutput">—</span>
+        </div>
+      </div>
+
+      <div class="formula">
+        Formula: λ = c ÷ f, where λ is wavelength in meters, c is the speed of light
+        (299,792,458 m/s), and f is frequency in hertz.
+      </div>
+    </section>
+
+    <!-- dBm / Watts -->
+    <section class="tab-panel" id="power">
+      <h2>dBm ↔ Watts</h2>
+      <p class="note">Convert RF power among dBm, watts, milliwatts, dBW, and RMS voltage.</p>
+
+      <div class="grid">
+        <div class="field">
+          <label for="powerMode">Conversion Direction</label>
+          <select id="powerMode" onchange="updatePowerLabel()">
+            <option value="dbm">dBm → Power</option>
+            <option value="watts">Watts → dBm</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="powerValue" id="powerValueLabel">Input Power (dBm)</label>
+          <input id="powerValue" type="number" step="any" value="30" />
+        </div>
+      </div>
+
+      <button class="calculate" onclick="calculatePower()">Convert Power</button>
+
+      <div class="results">
+        <div class="result-card">
+          <span class="label">dBm</span>
+          <span class="value" id="dbmOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Watts</span>
+          <span class="value" id="wattsOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Milliwatts</span>
+          <span class="value" id="milliwattsOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">dBW</span>
+          <span class="value" id="dbwOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">RMS Voltage at 50 Ω</span>
+          <span class="value" id="voltage50Output">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">RMS Voltage at 75 Ω</span>
+          <span class="value" id="voltage75Output">—</span>
+        </div>
+      </div>
+
+      <div class="formula">
+        dBm = 10 × log<sub>10</sub>(P<sub>mW</sub>). &nbsp;
+        Watts = 10<sup>((dBm − 30) ÷ 10)</sup>.
+      </div>
+    </section>
+
+    <!-- FSPL -->
+    <section class="tab-panel" id="fspl">
+      <h2>Free-Space Path Loss (FSPL)</h2>
+      <p class="note">
+        Calculates idealized propagation loss between isotropic antennas in unobstructed free space.
+      </p>
+
+      <div class="grid">
+        <div class="field">
+          <label for="fsplFreq">Frequency</label>
+          <input id="fsplFreq" type="number" min="0" step="any" value="2400" />
+        </div>
+        <div class="field">
+          <label for="fsplFreqUnit">Frequency Unit</label>
+          <select id="fsplFreqUnit">
+            <option value="1000">kHz</option>
+            <option value="1000000" selected>MHz</option>
+            <option value="1000000000">GHz</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fsplDistance">Distance</label>
+          <input id="fsplDistance" type="number" min="0" step="any" value="10" />
+        </div>
+        <div class="field">
+          <label for="fsplDistanceUnit">Distance Unit</label>
+          <select id="fsplDistanceUnit">
+            <option value="1">meters</option>
+            <option value="1000" selected>kilometers</option>
+            <option value="1609.344">miles</option>
+            <option value="0.3048">feet</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="calculate" onclick="calculateFSPL()">Calculate FSPL</button>
+
+      <div class="results">
+        <div class="result-card">
+          <span class="label">Free-Space Path Loss</span>
+          <span class="value" id="fsplOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Distance in Kilometers</span>
+          <span class="value" id="fsplDistanceOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Wavelength</span>
+          <span class="value" id="fsplWavelengthOutput">—</span>
+        </div>
+      </div>
+
+      <div class="formula">
+        Formula: FSPL(dB) = 20 × log<sub>10</sub>(4πdf ÷ c). This does not account for terrain,
+        foliage, buildings, weather, polarization mismatch, fading, or other system losses.
+      </div>
+    </section>
+
+    <!-- Link Budget -->
+    <section class="tab-panel" id="linkbudget">
+      <h2>Link Budget</h2>
+      <p class="note">
+        Estimate received signal level and link margin. Enter losses as positive dB values.
+      </p>
+
+      <div class="grid">
+        <div class="field">
+          <label for="lbTxPower">Transmit Power (dBm)</label>
+          <input id="lbTxPower" type="number" step="any" value="30" />
+        </div>
+        <div class="field">
+          <label for="lbTxCableLoss">Transmit Cable Loss (dB)</label>
+          <input id="lbTxCableLoss" type="number" min="0" step="any" value="1" />
+        </div>
+        <div class="field">
+          <label for="lbTxAntennaGain">Transmit Antenna Gain (dBi)</label>
+          <input id="lbTxAntennaGain" type="number" step="any" value="8" />
+        </div>
+        <div class="field">
+          <label for="lbPathLoss">Path Loss / FSPL (dB)</label>
+          <input id="lbPathLoss" type="number" min="0" step="any" value="120" />
+        </div>
+        <div class="field">
+          <label for="lbAdditionalLoss">Additional System Loss (dB)</label>
+          <input id="lbAdditionalLoss" type="number" min="0" step="any" value="3" />
+        </div>
+        <div class="field">
+          <label for="lbRxAntennaGain">Receive Antenna Gain (dBi)</label>
+          <input id="lbRxAntennaGain" type="number" step="any" value="8" />
+        </div>
+        <div class="field">
+          <label for="lbRxCableLoss">Receive Cable Loss (dB)</label>
+          <input id="lbRxCableLoss" type="number" min="0" step="any" value="1" />
+        </div>
+        <div class="field">
+          <label for="lbSensitivity">Receiver Sensitivity (dBm)</label>
+          <input id="lbSensitivity" type="number" step="any" value="-95" />
+        </div>
+      </div>
+
+      <button class="calculate" onclick="calculateLinkBudget()">Calculate Link Budget</button>
+
+      <div class="results">
+        <div class="result-card">
+          <span class="label">EIRP</span>
+          <span class="value" id="eirpOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Estimated Received Power</span>
+          <span class="value" id="receivedPowerOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Link Margin</span>
+          <span class="value" id="linkMarginOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Assessment</span>
+          <span class="value" id="linkAssessmentOutput">—</span>
+        </div>
+      </div>
+
+      <div class="formula">
+        Received power = Tx Power − Tx Cable Loss + Tx Antenna Gain − Path Loss − Additional Loss
+        + Rx Antenna Gain − Rx Cable Loss.
+      </div>
+    </section>
+
+    <!-- Antenna Length -->
+    <section class="tab-panel" id="antenna">
+      <h2>Antenna Length Calculator</h2>
+      <p class="note">
+        Estimates resonant free-space element lengths. The shortening factor accounts for practical
+        conductor diameter, insulation, nearby objects, and construction effects.
+      </p>
+
+      <div class="grid">
+        <div class="field">
+          <label for="antFreq">Frequency</label>
+          <input id="antFreq" type="number" min="0" step="any" value="146" />
+        </div>
+        <div class="field">
+          <label for="antFreqUnit">Frequency Unit</label>
+          <select id="antFreqUnit">
+            <option value="1000">kHz</option>
+            <option value="1000000" selected>MHz</option>
+            <option value="1000000000">GHz</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="shorteningFactor">Shortening Factor</label>
+          <input id="shorteningFactor" type="number" min="0.1" max="1.2" step="0.01" value="0.95" />
+        </div>
+      </div>
+
+      <button class="calculate" onclick="calculateAntenna()">Calculate Antenna Lengths</button>
+
+      <div class="results">
+        <div class="result-card">
+          <span class="label">Free-Space Wavelength</span>
+          <span class="value" id="antWavelengthOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Quarter-Wave Element</span>
+          <span class="value" id="antQuarterOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Half-Wave Dipole — Total Length</span>
+          <span class="value" id="antHalfOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Dipole — Each Leg</span>
+          <span class="value" id="antDipoleLegOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">5/8-Wave Element</span>
+          <span class="value" id="antFiveEighthsOutput">—</span>
+        </div>
+      </div>
+
+      <div class="formula">
+        Practical length = theoretical wavelength fraction × shortening factor. Final antenna
+        dimensions normally require adjustment and measurement in the installed environment.
+      </div>
+    </section>
+
+    <!-- VSWR -->
+    <section class="tab-panel" id="vswr">
+      <h2>VSWR / Return Loss</h2>
+      <p class="note">
+        Convert between voltage standing-wave ratio (VSWR), return loss, reflection coefficient,
+        and reflected-power percentage.
+      </p>
+
+      <div class="grid">
+        <div class="field">
+          <label for="vswrMode">Input Type</label>
+          <select id="vswrMode" onchange="updateVSWRLabel()">
+            <option value="vswr">VSWR</option>
+            <option value="returnloss">Return Loss (dB)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="vswrValue" id="vswrValueLabel">VSWR</label>
+          <input id="vswrValue" type="number" min="1" step="any" value="1.5" />
+        </div>
+      </div>
+
+      <button class="calculate" onclick="calculateVSWR()">Calculate Match Quality</button>
+
+      <div class="results">
+        <div class="result-card">
+          <span class="label">VSWR</span>
+          <span class="value" id="vswrOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Return Loss</span>
+          <span class="value" id="returnLossOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Reflection Coefficient</span>
+          <span class="value" id="reflectionOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Reflected Power</span>
+          <span class="value" id="reflectedPowerOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Power Delivered to Load</span>
+          <span class="value" id="deliveredPowerOutput">—</span>
+        </div>
+      </div>
+
+      <div class="formula">
+        Reflection coefficient: Γ = (VSWR − 1) ÷ (VSWR + 1). Return loss = −20 × log<sub>10</sub>(Γ).
+      </div>
+    </section>
+
+    <!-- Coax Loss -->
+    <section class="tab-panel" id="coax">
+      <h2>Coaxial Cable Loss</h2>
+      <p class="note">
+        Uses approximate attenuation data for common 50-ohm coaxial cable types. Actual loss varies
+        by manufacturer, cable condition, connector quality, installation, temperature, and frequency.
+      </p>
+
+      <div class="grid">
+        <div class="field">
+          <label for="coaxType">Cable Type</label>
+          <select id="coaxType">
+            <option value="rg58">RG-58</option>
+            <option value="rg8x">RG-8X / Mini-8</option>
+            <option value="rg213">RG-213 / RG-8</option>
+            <option value="lmr240">LMR-240</option>
+            <option value="lmr400" selected>LMR-400</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="coaxFreq">Frequency (MHz)</label>
+          <input id="coaxFreq" type="number" min="0.1" step="any" value="450" />
+        </div>
+        <div class="field">
+          <label for="coaxLength">Cable Length</label>
+          <input id="coaxLength" type="number" min="0" step="any" value="100" />
+        </div>
+        <div class="field">
+          <label for="coaxLengthUnit">Length Unit</label>
+          <select id="coaxLengthUnit">
+            <option value="feet" selected>feet</option>
+            <option value="meters">meters</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="coaxInputPower">Input Power (dBm)</label>
+          <input id="coaxInputPower" type="number" step="any" value="30" />
+        </div>
+      </div>
+
+      <button class="calculate" onclick="calculateCoax()">Calculate Cable Loss</button>
+
+      <div class="results">
+        <div class="result-card">
+          <span class="label">Estimated Loss per 100 ft</span>
+          <span class="value" id="coaxPer100Output">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Total Cable Loss</span>
+          <span class="value" id="coaxLossOutput">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Estimated Output Power</span>
+          <span class="value" id="coaxOutputPower">—</span>
+        </div>
+        <div class="result-card">
+          <span class="label">Power Remaining</span>
+          <span class="value" id="coaxRemainingOutput">—</span>
+        </div>
+      </div>
+
+      <div class="formula">
+        Attenuation data are interpolated from representative manufacturer-style values. Treat the
+        result as a planning estimate, not a certified cable specification.
+      </div>
+    </section>
+
+    <div class="footer-note">
+      <strong>Use note:</strong> This calculator is intended for unclassified planning, training, and
+      reference use. It does not replace equipment manuals, spectrum coordination, RF safety analysis,
+      engineering review, or operational approval.
+    </div>
+  </main>
+
+  <script>
+    const SPEED_OF_LIGHT = 299792458;
+
+    const coaxData = {
+      rg58: {
+        name: "RG-58",
+        points: [
+          { freq: 50, loss: 4.8 },
+          { freq: 100, loss: 6.6 },
+          { freq: 400, loss: 14.1 },
+          { freq: 1000, loss: 23.5 }
+        ]
+      },
+      rg8x: {
+        name: "RG-8X / Mini-8",
+        points: [
+          { freq: 50, loss: 2.6 },
+          { freq: 100, loss: 3.6 },
+          { freq: 400, loss: 7.7 },
+          { freq: 1000, loss: 12.5 }
+        ]
+      },
+      rg213: {
+        name: "RG-213 / RG-8",
+        points: [
+          { freq: 50, loss: 1.5 },
+          { freq: 100, loss: 2.1 },
+          { freq: 400, loss: 4.5 },
+          { freq: 1000, loss: 7.4 }
+        ]
+      },
+      lmr240: {
+        name: "LMR-240",
+        points: [
+          { freq: 50, loss: 1.6 },
+          { freq: 100, loss: 2.2 },
+          { freq: 400, loss: 4.8 },
+          { freq: 1000, loss: 7.7 }
+        ]
+      },
+      lmr400: {
+        name: "LMR-400",
+        points: [
+          { freq: 50, loss: 0.7 },
+          { freq: 100, loss: 1.0 },
+          { freq: 400, loss: 2.7 },
+          { freq: 1000, loss: 4.3 }
+        ]
+      }
+    };
+
+    function getNumber(id) {
+      return Number(document.getElementById(id).value);
+    }
+
+    function setText(id, text) {
+      document.getElementById(id).textContent = text;
+    }
+
+    function formatNumber(value, decimals = 3) {
+      if (!Number.isFinite(value)) return "—";
+
+      const absolute = Math.abs(value);
+
+      if (absolute !== 0 && (absolute >= 1000000 || absolute < 0.001)) {
+        return value.toExponential(3);
+      }
+
+      return Number(value.toFixed(decimals)).toLocaleString();
+    }
+
+    function formatLength(meters) {
+      if (!Number.isFinite(meters)) return "—";
+
+      if (meters >= 1) {
+        return `${formatNumber(meters)} m (${formatNumber(meters * 3.28084)} ft)`;
+      }
+
+      if (meters >= 0.01) {
+        return `${formatNumber(meters * 100)} cm (${formatNumber(meters * 39.3701)} in)`;
+      }
+
+      return `${formatNumber(meters * 1000)} mm (${formatNumber(meters * 39.3701)} in)`;
+    }
+
+    function validPositive(value) {
+      return Number.isFinite(value) && value > 0;
+    }
+
+    function showError(message) {
+      window.alert(message);
+    }
+
+    // Tabs
+    document.querySelectorAll(".tab-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        const tabName = button.dataset.tab;
+
+        document.querySelectorAll(".tab-button").forEach((item) => {
+          item.classList.remove("active");
+        });
+
+        document.querySelectorAll(".tab-panel").forEach((panel) => {
+          panel.classList.remove("active");
+        });
+
+        button.classList.add("active");
+        document.getElementById(tabName).classList.add("active");
+      });
+    });
+
+    // Frequency / Wavelength
+    function calculateFrequency() {
+      const value = getNumber("freqValue");
+      const multiplier = getNumber("freqUnit");
+      const frequencyHz = value * multiplier;
+
+      if (!validPositive(frequencyHz)) {
+        showError("Enter a frequency greater than zero.");
+        return;
+      }
+
+      const wavelength = SPEED_OF_LIGHT / frequencyHz;
+
+      setText("freqHzOutput", `${formatNumber(frequencyHz)} Hz`);
+      setText("wavelengthOutput", formatLength(wavelength));
+      setText("quarterWaveOutput", formatLength(wavelength / 4));
+      setText("halfWaveOutput", formatLength(wavelength / 2));
+    }
+
+    // dBm / Watts
+    function updatePowerLabel() {
+      const mode = document.getElementById("powerMode").value;
+      const label = document.getElementById("powerValueLabel");
+      const input = document.getElementById("powerValue");
+
+      if (mode === "dbm") {
+        label.textContent = "Input Power (dBm)";
+        input.value = "30";
+      } else {
+        label.textContent = "Input Power (Watts)";
+        input.value = "1";
+      }
+    }
+
+    function calculatePower() {
+      const mode = document.getElementById("powerMode").value;
+      const value = getNumber("powerValue");
+      let watts;
+      let dbm;
+
+      if (mode === "dbm") {
+        if (!Number.isFinite(value)) {
+          showError("Enter a valid dBm value.");
+          return;
+        }
+
+        dbm = value;
+        watts = Math.pow(10, (dbm - 30) / 10);
+      } else {
+        if (!validPositive(value)) {
+          showError("Enter a power value greater than zero watts.");
+          return;
+        }
+
+        watts = value;
+        dbm = 10 * Math.log10(watts * 1000);
+      }
+
+      const milliwatts = watts * 1000;
+      const dbw = dbm - 30;
+      const voltage50 = Math.sqrt(watts * 50);
+      const voltage75 = Math.sqrt(watts * 75);
+
+      setText("dbmOutput", `${formatNumber(dbm)} dBm`);
+      setText("wattsOutput", `${formatNumber(watts, 6)} W`);
+      setText("milliwattsOutput", `${formatNumber(milliwatts, 6)} mW`);
+      setText("dbwOutput", `${formatNumber(dbw)} dBW`);
+      setText("voltage50Output", `${formatNumber(voltage50, 6)} V RMS`);
+      setText("voltage75Output", `${formatNumber(voltage75, 6)} V RMS`);
+    }
+
+    // FSPL
+    function calculateFSPL() {
+      const frequency = getNumber("fsplFreq") * getNumber("fsplFreqUnit");
+      const distanceMeters = getNumber("fsplDistance") * getNumber("fsplDistanceUnit");
+
+      if (!validPositive(frequency) || !validPositive(distanceMeters)) {
+        showError("Enter a frequency and distance greater than zero.");
+        return;
+      }
+
+      const fspl = 20 * Math.log10((4 * Math.PI * distanceMeters * frequency) / SPEED_OF_LIGHT);
+      const wavelength = SPEED_OF_LIGHT / frequency;
+
+      setText("fsplOutput", `${formatNumber(fspl)} dB`);
+      setText("fsplDistanceOutput", `${formatNumber(distanceMeters / 1000)} km`);
+      setText("fsplWavelengthOutput", formatLength(wavelength));
+    }
+
+    // Link budget
+    function calculateLinkBudget() {
+      const txPower = getNumber("lbTxPower");
+      const txCableLoss = getNumber("lbTxCableLoss");
+      const txAntennaGain = getNumber("lbTxAntennaGain");
+      const pathLoss = getNumber("lbPathLoss");
+      const additionalLoss = getNumber("lbAdditionalLoss");
+      const rxAntennaGain = getNumber("lbRxAntennaGain");
+      const rxCableLoss = getNumber("lbRxCableLoss");
+      const sensitivity = getNumber("lbSensitivity");
+
+      const values = [
+        txPower,
+        txCableLoss,
+        txAntennaGain,
+        pathLoss,
+        additionalLoss,
+        rxAntennaGain,
+        rxCableLoss,
+        sensitivity
+      ];
+
+      if (values.some((value) => !Number.isFinite(value))) {
+        showError("Enter valid values for every link-budget field.");
+        return;
+      }
+
+      const eirp = txPower - txCableLoss + txAntennaGain;
+      const receivedPower =
+        eirp - pathLoss - additionalLoss + rxAntennaGain - rxCableLoss;
+      const linkMargin = receivedPower - sensitivity;
+
+      let assessment = "";
+      let assessmentClass = "";
+
+      if (linkMargin >= 20) {
+        assessment = "Strong margin";
+        assessmentClass = "status-good";
+      } else if (linkMargin >= 10) {
+        assessment = "Usable margin";
+        assessmentClass = "status-good";
+      } else if (linkMargin >= 0) {
+        assessment = "Marginal";
+        assessmentClass = "status-warn";
+      } else {
+        assessment = "Below sensitivity";
+        assessmentClass = "status-danger";
+      }
+
+      setText("eirpOutput", `${formatNumber(eirp)} dBm / dBW ${formatNumber(eirp - 30)}`);
+      setText("receivedPowerOutput", `${formatNumber(receivedPower)} dBm`);
+      setText("linkMarginOutput", `${formatNumber(linkMargin)} dB`);
+
+      const assessmentElement = document.getElementById("linkAssessmentOutput");
+      assessmentElement.textContent = assessment;
+      assessmentElement.className = `value ${assessmentClass}`;
+    }
+
+    // Antenna length
+    function calculateAntenna() {
+      const frequency = getNumber("antFreq") * getNumber("antFreqUnit");
+      const shorteningFactor = getNumber("shorteningFactor");
+
+      if (!validPositive(frequency)) {
+        showError("Enter a frequency greater than zero.");
+        return;
+      }
+
+      if (!Number.isFinite(shorteningFactor) || shorteningFactor <= 0) {
+        showError("Enter a valid shortening factor greater than zero.");
+        return;
+      }
+
+      const wavelength = SPEED_OF_LIGHT / frequency;
+      const quarterWave = (wavelength / 4) * shorteningFactor;
+      const halfWave = (wavelength / 2) * shorteningFactor;
+      const fiveEighths = (wavelength * 0.625) * shorteningFactor;
+
+      setText("antWavelengthOutput", formatLength(wavelength));
+      setText("antQuarterOutput", formatLength(quarterWave));
+      setText("antHalfOutput", formatLength(halfWave));
+      setText("antDipoleLegOutput", formatLength(halfWave / 2));
+      setText("antFiveEighthsOutput", formatLength(fiveEighths));
+    }
+
+    // VSWR / Return Loss
+    function updateVSWRLabel() {
+      const mode = document.getElementById("vswrMode").value;
+      const label = document.getElementById("vswrValueLabel");
+      const input = document.getElementById("vswrValue");
+
+      if (mode === "vswr") {
+        label.textContent = "VSWR";
+        input.min = "1";
+        input.value = "1.5";
+      } else {
+        label.textContent = "Return Loss (dB)";
+        input.min = "0";
+        input.value = "20";
+      }
+    }
+
+    function calculateVSWR() {
+      const mode = document.getElementById("vswrMode").value;
+      const value = getNumber("vswrValue");
+
+      let vswr;
+      let gamma;
+      let returnLoss;
+
+      if (mode === "vswr") {
+        if (!Number.isFinite(value) || value < 1) {
+          showError("VSWR must be 1.0 or greater.");
+          return;
+        }
+
+        vswr = value;
+        gamma = (vswr - 1) / (vswr + 1);
+        returnLoss = gamma === 0 ? Infinity : -20 * Math.log10(gamma);
+      } else {
+        if (!Number.isFinite(value) || value < 0) {
+          showError("Return loss must be zero dB or greater.");
+          return;
+        }
+
+        returnLoss = value;
+        gamma = Math.pow(10, -returnLoss / 20);
+        vswr = gamma >= 1 ? Infinity : (1 + gamma) / (1 - gamma);
+      }
+
+      const reflectedPercent = Math.pow(gamma, 2) * 100;
+      const deliveredPercent = 100 - reflectedPercent;
+
+      setText(
+        "vswrOutput",
+        Number.isFinite(vswr) ? `${formatNumber(vswr)} : 1` : "Infinite"
+      );
+
+      setText(
+        "returnLossOutput",
+        Number.isFinite(returnLoss) ? `${formatNumber(returnLoss)} dB` : "Infinite"
+      );
+
+      setText("reflectionOutput", formatNumber(gamma, 6));
+      setText("reflectedPowerOutput", `${formatNumber(reflectedPercent, 4)}%`);
+      setText("deliveredPowerOutput", `${formatNumber(deliveredPercent, 4)}%`);
+    }
+
+    // Coax loss
+    function logarithmicInterpolate(points, frequency) {
+      let lower = points[0];
+      let upper = points[1];
+
+      if (frequency <= points[0].freq) {
+        lower = points[0];
+        upper = points[1];
+      } else if (frequency >= points[points.length - 1].freq) {
+        lower = points[points.length - 2];
+        upper = points[points.length - 1];
+      } else {
+        for (let i = 0; i < points.length - 1; i++) {
+          if (frequency >= points[i].freq && frequency <= points[i + 1].freq) {
+            lower = points[i];
+            upper = points[i + 1];
+            break;
+          }
+        }
+      }
+
+      const frequencyRatio = Math.log(frequency / lower.freq) / Math.log(upper.freq / lower.freq);
+      return lower.loss + frequencyRatio * (upper.loss - lower.loss);
+    }
+
+    function calculateCoax() {
+      const cableKey = document.getElementById("coaxType").value;
+      const frequency = getNumber("coaxFreq");
+      const length = getNumber("coaxLength");
+      const lengthUnit = document.getElementById("coaxLengthUnit").value;
+      const inputPower = getNumber("coaxInputPower");
+
+      if (!validPositive(frequency) || !Number.isFinite(length) || length < 0) {
+        showError("Enter a valid frequency and non-negative cable length.");
+        return;
+      }
+
+      if (!Number.isFinite(inputPower)) {
+        showError("Enter a valid input power in dBm.");
+        return;
+      }
+
+      const cable = coaxData[cableKey];
+      const lossPer100Feet = logarithmicInterpolate(cable.points, frequency);
+      const lengthFeet = lengthUnit === "meters" ? length * 3.28084 : length;
+      const totalLoss = lossPer100Feet * (lengthFeet / 100);
+      const outputPower = inputPower - totalLoss;
+      const powerRemaining = Math.pow(10, -totalLoss / 10) * 100;
+
+      setText("coaxPer100Output", `${formatNumber(lossPer100Feet)} dB / 100 ft`);
+      setText("coaxLossOutput", `${formatNumber(totalLoss)} dB`);
+      setText("coaxOutputPower", `${formatNumber(outputPower)} dBm`);
+      setText("coaxRemainingOutput", `${formatNumber(powerRemaining, 3)}%`);
+    }
+
+    // Populate all tabs with their default calculations at initial load.
+    calculateFrequency();
+    calculatePower();
+    calculateFSPL();
+    calculateLinkBudget();
+    calculateAntenna();
+    calculateVSWR();
+    calculateCoax();
+  </script>
+</body>
+</html>
