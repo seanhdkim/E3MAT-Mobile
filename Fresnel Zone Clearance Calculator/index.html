@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fresnel Zone Clearance Calculator</title>
+
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #121c2e;
+      --panel-2: #17243a;
+      --border: #2b3b55;
+      --text: #edf3fb;
+      --muted: #aebed0;
+      --accent: #45b3e7;
+      --accent-dark: #147dac;
+      --zone: #4fd2b4;
+      --warning: #f0c35a;
+      --danger: #ed7373;
+      --input: #0d1726;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background: linear-gradient(135deg, #08111e, #101c30 55%, #0b1422);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.45;
+    }
+
+    .container {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 30px 0 46px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 1.3rem;
+    }
+
+    p {
+      margin: 0 0 12px;
+    }
+
+    .subtitle,
+    .note,
+    .small {
+      color: var(--muted);
+    }
+
+    .panel {
+      margin-top: 20px;
+      padding: 22px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(18, 28, 46, 0.96);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(205px, 1fr));
+      gap: 15px;
+      margin: 18px 0;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 10px;
+      color: var(--text);
+      background: var(--input);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 1rem;
+    }
+
+    input:focus,
+    select:focus {
+      outline: 2px solid rgba(69, 179, 231, 0.45);
+      border-color: var(--accent);
+    }
+
+    .calculate-button {
+      padding: 11px 18px;
+      margin: 4px 0 4px;
+      border: 0;
+      border-radius: 7px;
+      color: #06101a;
+      background: var(--accent);
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .calculate-button:hover {
+      background: #75c9ef;
+    }
+
+    .results {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .result-card {
+      padding: 14px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+    }
+
+    .result-label {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .result-value {
+      color: #ffffff;
+      font-size: 1.15rem;
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .diagram-wrap {
+      margin-top: 22px;
+      padding: 14px;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #0a1321;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      min-width: 720px;
+      height: auto;
+    }
+
+    .formula,
+    .use-note {
+      margin-top: 18px;
+      padding: 12px 14px;
+      color: var(--muted);
+      border-left: 3px solid var(--accent);
+      background: rgba(69, 179, 231, 0.07);
+      font-size: 0.9rem;
+    }
+
+    .use-note {
+      border-left-color: var(--warning);
+      background: rgba(240, 195, 90, 0.07);
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        width: min(100% - 20px, 1120px);
+        padding-top: 18px;
+      }
+
+      .panel {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <header>
+      <h1>Fresnel Zone Clearance Calculator</h1>
+      <p class="subtitle">
+        Estimate first Fresnel-zone clearance at a point along an RF line-of-sight path.
+      </p>
+    </header>
+
+    <section class="panel">
+      <h2>Path Inputs</h2>
+      <p class="note">
+        Enter the total transmitter-to-receiver path distance and the obstruction's distance from
+        the transmitter.
+      </p>
+
+      <div class="grid">
+        <div class="field">
+          <label for="frequencyValue">Frequency</label>
+          <input id="frequencyValue" type="number" min="0" step="any" value="2400" />
+        </div>
+
+        <div class="field">
+          <label for="frequencyUnit">Frequency Unit</label>
+          <select id="frequencyUnit">
+            <option value="1000">kHz</option>
+            <option value="1000000" selected>MHz</option>
+            <option value="1000000000">GHz</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="pathDistance">Total Path Distance</label>
+          <input id="pathDistance" type="number" min="0" step="any" value="10" />
+        </div>
+
+        <div class="field">
+          <label for="distanceUnit">Path Distance Unit</label>
+          <select id="distanceUnit">
+            <option value="1">meters</option>
+            <option value="1000" selected>kilometers</option>
+            <option value="1609.344">miles</option>
+            <option value="0.3048">feet</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="obstructionDistance">Obstruction Distance From Transmitter</label>
+          <input id="obstructionDistance" type="number" min="0" step="any" value="5" />
+        </div>
+
+        <div class="field">
+          <label for="obstructionUnit">Obstruction Distance Unit</label>
+          <select id="obstructionUnit">
+            <option value="1">meters</option>
+            <option value="1000" selected>kilometers</option>
+            <option value="1609.344">miles</option>
+            <option value="0.3048">feet</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="calculate-button" onclick="calculateFresnel()">
+        Calculate Fresnel Clearance
+      </button>
+
+      <div class="results">
+        <div class="result-card">
+          <span class="result-label">Wavelength</span>
+          <span class="result-value" id="wavelengthOutput">—</span>
+        </div>
+
+        <div class="result-card">
+          <span class="result-label">First Fresnel-Zone Radius at Obstruction</span>
+          <span class="result-value" id="fresnelRadiusOutput">—</span>
+        </div>
+
+        <div class="result-card">
+          <span class="result-label">Recommended 60% Clearance</span>
+          <span class="result-value" id="clearanceOutput">—</span>
+        </div>
+
+        <div class="result-card">
+          <span class="result-label">Maximum First-Zone Radius at Midpoint</span>
+          <span class="result-value" id="maximumRadiusOutput">—</span>
+        </div>
+
+        <div class="result-card">
+          <span class="result-label">Transmitter to Obstruction</span>
+          <span class="result-value" id="d1Output">—</span>
+        </div>
+
+        <div class="result-card">
+          <span class="result-label">Obstruction to Receiver</span>
+          <span class="result-value" id="d2Output">—</span>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <svg id="fresnelDiagram" viewBox="0 0 900 330" role="img"
+          aria-label="Fresnel zone profile diagram">
+          <defs>
+            <marker id="arrowCyan" markerWidth="8" markerHeight="8" refX="4" refY="4"
+              orient="auto-start-reverse">
+              <path d="M 0 0 L 8 4 L 0 8 z" fill="#45b3e7"></path>
+            </marker>
+
+            <marker id="arrowGold" markerWidth="8" markerHeight="8" refX="4" refY="4"
+              orient="auto-start-reverse">
+              <path d="M 0 0 L 8 4 L 0 8 z" fill="#f0c35a"></path>
+            </marker>
+          </defs>
+
+          <rect x="0" y="0" width="900" height="330" rx="8" fill="#0a1321"></rect>
+
+          <text x="450" y="28" text-anchor="middle" fill="#edf3fb"
+            font-size="18" font-weight="700">
+            First Fresnel Zone Profile
+          </text>
+
+          <line x1="70" y1="274" x2="830" y2="274" stroke="#536783" stroke-width="2"></line>
+
+          <g id="diagramContent"></g>
+        </svg>
+      </div>
+
+      <div class="formula">
+        <strong>First Fresnel-zone radius:</strong><br />
+        r<sub>1</sub> = √[(λ × d<sub>1</sub> × d<sub>2</sub>) ÷ (d<sub>1</sub> + d<sub>2</sub>)]<br /><br />
+        Where λ is wavelength, d<sub>1</sub> is transmitter-to-obstruction distance, and
+        d<sub>2</sub> is obstruction-to-receiver distance. All distance inputs must use the same
+        units internally; this calculator converts them to meters.
+      </div>
+
+      <div class="use-note">
+        <strong>Planning note:</strong> Maintaining approximately 60% clearance of the first
+        Fresnel zone is a common planning target for many line-of-sight links. Actual path
+        performance can also be affected by terrain, Earth curvature, antenna heights,
+        multipath, foliage, buildings, weather, polarization, and equipment-specific losses.
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const SPEED_OF_LIGHT = 299792458;
+
+    function getNumber(id) {
+      return Number(document.getElementById(id).value);
+    }
+
+    function setText(id, text) {
+      document.getElementById(id).textContent = text;
+    }
+
+    function formatNumber(value, decimals = 3) {
+      if (!Number.isFinite(value)) return "—";
+
+      const absolute = Math.abs(value);
+
+      if (absolute !== 0 && (absolute >= 1000000 || absolute < 0.001)) {
+        return value.toExponential(3);
+      }
+
+      return Number(value.toFixed(decimals)).toLocaleString();
+    }
+
+    function formatLength(meters) {
+      if (!Number.isFinite(meters)) return "—";
+
+      const feet = meters * 3.28084;
+
+      if (meters >= 1000) {
+        return `${formatNumber(meters / 1000)} km (${formatNumber(feet / 5280)} mi)`;
+      }
+
+      if (meters >= 1) {
+        return `${formatNumber(meters)} m (${formatNumber(feet)} ft)`;
+      }
+
+      return `${formatNumber(meters * 100)} cm (${formatNumber(feet * 12)} in)`;
+    }
+
+    function showError(message) {
+      window.alert(message);
+    }
+
+    function calculateFresnel() {
+      const frequencyHz =
+        getNumber("frequencyValue") * getNumber("frequencyUnit");
+
+      const totalPathMeters =
+        getNumber("pathDistance") * getNumber("distanceUnit");
+
+      const obstructionMeters =
+        getNumber("obstructionDistance") * getNumber("obstructionUnit");
+
+      if (!Number.isFinite(frequencyHz) || frequencyHz <= 0) {
+        showError("Enter a frequency greater than zero.");
+        return;
+      }
+
+      if (!Number.isFinite(totalPathMeters) || totalPathMeters <= 0) {
+        showError("Enter a total path distance greater than zero.");
+        return;
+      }
+
+      if (
+        !Number.isFinite(obstructionMeters) ||
+        obstructionMeters <= 0 ||
+        obstructionMeters >= totalPathMeters
+      ) {
+        showError(
+          "The obstruction distance must be greater than zero and less than the total path distance."
+        );
+        return;
+      }
+
+      const wavelength = SPEED_OF_LIGHT / frequencyHz;
+      const d1 = obstructionMeters;
+      const d2 = totalPathMeters - obstructionMeters;
+
+      const fresnelRadius = Math.sqrt(
+        (wavelength * d1 * d2) / (d1 + d2)
+      );
+
+      const recommendedClearance = fresnelRadius * 0.6;
+
+      const maximumRadiusAtMidpoint = Math.sqrt(
+        (wavelength * totalPathMeters) / 4
+      );
+
+      setText("wavelengthOutput", formatLength(wavelength));
+      setText("fresnelRadiusOutput", formatLength(fresnelRadius));
+      setText("clearanceOutput", formatLength(recommendedClearance));
+      setText("maximumRadiusOutput", formatLength(maximumRadiusAtMidpoint));
+      setText("d1Output", formatLength(d1));
+      setText("d2Output", formatLength(d2));
+
+      drawFresnelProfile(
+        wavelength,
+        totalPathMeters,
+        d1,
+        fresnelRadius,
+        maximumRadiusAtMidpoint,
+        recommendedClearance
+      );
+    }
+
+    function drawFresnelProfile(
+      wavelength,
+      totalPathMeters,
+      obstructionMeters,
+      fresnelRadius,
+      maximumRadius,
+      recommendedClearance
+    ) {
+      const svgContent = document.getElementById("diagramContent");
+
+      const left = 70;
+      const right = 830;
+      const pathWidth = right - left;
+      const centerY = 160;
+      const antennaBaseY = 274;
+
+      const obstructionX =
+        left + (obstructionMeters / totalPathMeters) * pathWidth;
+
+      /*
+        The diagram scales the largest first-zone radius to fit the SVG vertically.
+        It is a proportional visualization, not a terrain/elevation profile.
+      */
+      const availableHeight = 105;
+      const verticalScale = availableHeight / maximumRadius;
+
+      let upperPoints = [];
+      let lowerPoints = [];
+
+      const segments = 80;
+
+      for (let i = 0; i <= segments; i++) {
+        const fraction = i / segments;
+        const xDistance = totalPathMeters * fraction;
+
+        let zoneRadius = 0;
+
+        if (xDistance > 0 && xDistance < totalPathMeters) {
+          zoneRadius = Math.sqrt(
+            (wavelength * xDistance * (totalPathMeters - xDistance)) /
+            totalPathMeters
+          );
+        }
+
+        const x = left + fraction * pathWidth;
+        const yOffset = zoneRadius * verticalScale;
+
+        upperPoints.push(`${x.toFixed(2)},${(centerY - yOffset).toFixed(2)}`);
+        lowerPoints.push(`${x.toFixed(2)},${(centerY + yOffset).toFixed(2)}`);
+      }
+
+      const zonePolygon = [
+        ...upperPoints,
+        ...lowerPoints.reverse()
+      ].join(" ");
+
+      const obstructionRadiusSvg = fresnelRadius * verticalScale;
+      const clearanceSvg = recommendedClearance * verticalScale;
+
+      svgContent.innerHTML = `
+        <!-- First Fresnel zone -->
+        <polygon
+          points="${zonePolygon}"
+          fill="rgba(79, 210, 180, 0.20)"
+          stroke="#4fd2b4"
+          stroke-width="2"
+        ></polygon>
+
+        <!-- Direct line of sight -->
+        <line
+          x1="${left}" y1="${centerY}"
+          x2="${right}" y2="${centerY}"
+          stroke="#edf3fb"
+          stroke-width="2.5"
+        ></line>
+
+        <!-- Transmitter tower / antenna -->
+        <line x1="${left}" y1="${antennaBaseY}" x2="${left}" y2="${centerY}"
+          stroke="#45b3e7" stroke-width="5"></line>
+        <line x1="${left - 18}" y1="${antennaBaseY}" x2="${left + 18}" y2="${antennaBaseY}"
+          stroke="#45b3e7" stroke-width="5"></line>
+        <text x="${left}" y="${antennaBaseY + 26}" text-anchor="middle"
+          fill="#edf3fb" font-size="14" font-weight="700">Transmitter</text>
+
+        <!-- Receiver tower / antenna -->
+        <line x1="${right}" y1="${antennaBaseY}" x2="${right}" y2="${centerY}"
+          stroke="#45b3e7" stroke-width="5"></line>
+        <line x1="${right - 18}" y1="${antennaBaseY}" x2="${right + 18}" y2="${antennaBaseY}"
+          stroke="#45b3e7" stroke-width="5"></line>
+        <text x="${right}" y="${antennaBaseY + 26}" text-anchor="middle"
+          fill="#edf3fb" font-size="14" font-weight="700">Receiver</text>
+
+        <!-- Obstruction location -->
+        <line
+          x1="${obstructionX}" y1="48"
+          x2="${obstructionX}" y2="${antennaBaseY}"
+          stroke="#ed7373"
+          stroke-width="2"
+          stroke-dasharray="7 6"
+        ></line>
+
+        <circle cx="${obstructionX}" cy="${centerY}" r="6" fill="#ed7373"></circle>
+
+        <text x="${obstructionX}" y="48" text-anchor="middle"
+          fill="#ed7373" font-size="14" font-weight="700">
+          Obstruction Location
+        </text>
+
+        <!-- Full first-zone radius at obstruction -->
+        <line
+          x1="${obstructionX - 18}"
+          y1="${centerY}"
+          x2="${obstructionX - 18}"
+          y2="${centerY - obstructionRadiusSvg}"
+          stroke="#45b3e7"
+          stroke-width="2.5"
+          marker-start="url(#arrowCyan)"
+          marker-end="url(#arrowCyan)"
+        ></line>
+
+        <text
+          x="${obstructionX - 28}"
+          y="${centerY - obstructionRadiusSvg / 2}"
+          text-anchor="end"
+          fill="#45b3e7"
+          font-size="13"
+          font-weight="700"
+        >
+          F1 radius
+        </text>
+
+        <!-- 60 percent recommended clearance -->
+        <line
+          x1="${obstructionX + 18}"
+          y1="${centerY}"
+          x2="${obstructionX + 18}"
+          y2="${centerY - clearanceSvg}"
+          stroke="#f0c35a"
+          stroke-width="2.5"
+          marker-start="url(#arrowGold)"
+          marker-end="url(#arrowGold)"
+        ></line>
+
+        <text
+          x="${obstructionX + 28}"
+          y="${centerY - clearanceSvg / 2}"
+          text-anchor="start"
+          fill="#f0c35a"
+          font-size="13"
+          font-weight="700"
+        >
+          60% clearance
+        </text>
+
+        <!-- Labels -->
+        <text x="${left + pathWidth / 2}" y="${centerY - maximumRadius * verticalScale - 14}"
+          text-anchor="middle" fill="#4fd2b4" font-size="14" font-weight="700">
+          First Fresnel Zone
+        </text>
+
+        <text x="${left + pathWidth / 2}" y="${centerY - 10}"
+          text-anchor="middle" fill="#edf3fb" font-size="13">
+          Direct Line of Sight
+        </text>
+
+        <text x="${left + pathWidth / 2}" y="${antennaBaseY - 12}"
+          text-anchor="middle" fill="#aebed0" font-size="13">
+          Total Path: ${formatLength(totalPathMeters)}
+        </text>
+      `;
+    }
+
+    calculateFresnel();
+  </script>
+</body>
+</html>
