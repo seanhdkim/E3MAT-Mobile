@@ -13,12 +13,13 @@
       --border: #b8c7d9;
       --text: #17212b;
       --muted: #52616f;
-      --success: #0b6e3e;
       --success-bg: #e9f7ef;
-      --danger: #a61b1b;
       --danger-bg: #fceded;
       --warning-bg: #fff6dc;
       --white: #ffffff;
+      --signal-one: #1565c0;
+      --signal-two: #c64a00;
+      --required: #9b1c1c;
       --shadow: 0 3px 12px rgba(11, 31, 58, 0.12);
     }
 
@@ -41,9 +42,12 @@
       border-bottom: 5px solid var(--blue);
     }
 
-    header .container {
+    header .container,
+    main,
+    footer {
       max-width: 1200px;
-      margin: 0 auto;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     h1 {
@@ -58,8 +62,8 @@
     }
 
     main {
-      max-width: 1200px;
-      margin: 1.5rem auto 2.5rem;
+      margin-top: 1.5rem;
+      margin-bottom: 2.5rem;
       padding: 0 1rem;
     }
 
@@ -80,28 +84,31 @@
 
     .card-header h2 {
       margin: 0;
-      font-size: 1.15rem;
       color: var(--navy);
+      font-size: 1.15rem;
     }
 
     .card-body {
       padding: 1rem;
     }
 
-    .signal-grid {
+    .signal-grid,
+    .calc-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 1rem;
     }
 
-    .signal-panel {
+    .signal-panel,
+    .calculation {
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 1rem;
       background: #fbfdff;
     }
 
-    .signal-panel h3 {
+    .signal-panel h3,
+    .calculation h3 {
       margin-top: 0;
       margin-bottom: 0.9rem;
       color: var(--navy);
@@ -114,9 +121,9 @@
 
     label {
       display: block;
-      font-weight: 700;
       margin-bottom: 0.3rem;
       font-size: 0.92rem;
+      font-weight: 700;
     }
 
     input,
@@ -124,11 +131,11 @@
       width: 100%;
       min-height: 2.5rem;
       padding: 0.5rem 0.6rem;
-      font: inherit;
-      color: var(--text);
       border: 1px solid #7e94ac;
       border-radius: 4px;
       background: var(--white);
+      color: var(--text);
+      font: inherit;
     }
 
     input:focus,
@@ -153,17 +160,17 @@
 
     button {
       min-height: 2.5rem;
+      padding: 0.55rem 1rem;
       border: 0;
       border-radius: 4px;
-      padding: 0.55rem 1rem;
-      font-weight: 700;
       cursor: pointer;
       font: inherit;
+      font-weight: 700;
     }
 
     .btn-primary {
-      color: var(--white);
       background: var(--blue);
+      color: var(--white);
     }
 
     .btn-primary:hover {
@@ -171,9 +178,9 @@
     }
 
     .btn-secondary {
-      color: var(--navy);
-      background: #dfe8f2;
       border: 1px solid #aabbd0;
+      background: #dfe8f2;
+      color: var(--navy);
     }
 
     .btn-secondary:hover {
@@ -186,8 +193,8 @@
       padding: 0.8rem 1rem;
       border: 1px solid #cf4545;
       border-radius: 4px;
-      color: #7f1111;
       background: #fff0f0;
+      color: #7f1111;
       font-weight: 700;
     }
 
@@ -196,10 +203,10 @@
     }
 
     .status {
-      padding: 1rem;
-      border-radius: 6px;
       margin-bottom: 1rem;
+      padding: 1rem;
       border: 1px solid;
+      border-radius: 6px;
     }
 
     .status h3 {
@@ -212,14 +219,14 @@
     }
 
     .status.meets {
-      background: var(--success-bg);
       border-color: #77bd95;
+      background: var(--success-bg);
       color: #084c2c;
     }
 
     .status.does-not-meet {
-      background: var(--danger-bg);
       border-color: #d88a8a;
+      background: var(--danger-bg);
       color: #801313;
     }
 
@@ -248,27 +255,9 @@
     .metric-value {
       margin-top: 0.25rem;
       color: var(--navy);
-      font-size: 1.25rem;
+      font-size: 1.1rem;
       font-weight: 700;
-    }
-
-    .calc-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1rem;
-    }
-
-    .calculation {
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 1rem;
-      background: #fbfdff;
-    }
-
-    .calculation h3 {
-      margin-top: 0;
-      color: var(--navy);
-      font-size: 1rem;
+      overflow-wrap: anywhere;
     }
 
     .equation {
@@ -278,7 +267,7 @@
       border-left: 4px solid var(--blue);
       background: #edf4fc;
       font-family: "Courier New", Courier, monospace;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       overflow-wrap: anywhere;
     }
 
@@ -303,7 +292,87 @@
       color: var(--navy);
     }
 
+    .spectrum-panel {
+      margin-top: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1rem;
+      background: #fbfdff;
+    }
+
+    .spectrum-panel h3 {
+      margin-top: 0;
+      margin-bottom: 0.35rem;
+      color: var(--navy);
+      font-size: 1.05rem;
+    }
+
+    .spectrum-intro {
+      margin: 0 0 0.75rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .plot-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: var(--white);
+    }
+
+    #spectrumCanvas {
+      display: block;
+      width: 100%;
+      height: 460px;
+      min-width: 720px;
+    }
+
+    .plot-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.25rem;
+      margin: 0.75rem 0;
+      font-size: 0.88rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .legend-swatch {
+      display: inline-block;
+      width: 1.2rem;
+      height: 0.25rem;
+      border-radius: 2px;
+    }
+
+    .legend-swatch.signal-one {
+      background: var(--signal-one);
+    }
+
+    .legend-swatch.signal-two {
+      background: var(--signal-two);
+    }
+
+    .legend-swatch.required {
+      background: var(--required);
+    }
+
+    .plot-summary {
+      margin: 0.75rem 0 0;
+      padding: 0.75rem;
+      border-left: 4px solid #b57900;
+      border-radius: 4px;
+      background: var(--warning-bg);
+      color: #584000;
+      font-size: 0.88rem;
+    }
+
     .note {
+      margin-top: 1rem;
       padding: 0.9rem 1rem;
       border-left: 4px solid #b57900;
       border-radius: 4px;
@@ -318,8 +387,7 @@
     }
 
     footer {
-      max-width: 1200px;
-      margin: 0 auto 1.5rem;
+      margin-bottom: 1.5rem;
       padding: 0 1rem;
       color: var(--muted);
       font-size: 0.8rem;
@@ -349,9 +417,8 @@
     <div class="container">
       <h1>Telemetry Minimum Frequency Separation Calculator</h1>
       <p>
-        Calculates minimum center-frequency separation using IRIG 106-23 Chapter 2 Equation A-1.
-        Both signal directions are evaluated; the larger result is the governing
-        minimum frequency separation.
+        Calculates Equation A-1 minimum center-frequency separation and displays
+        numerical spectrum estimates for the two selected signals.
       </p>
     </div>
   </header>
@@ -474,7 +541,12 @@
       </div>
     </section>
 
-    <section id="resultsSection" class="card results" aria-live="polite" aria-labelledby="results-heading">
+    <section
+      id="resultsSection"
+      class="card results"
+      aria-live="polite"
+      aria-labelledby="results-heading"
+    >
       <div class="card-header">
         <h2 id="results-heading">Calculation Results</h2>
       </div>
@@ -526,25 +598,73 @@
           </article>
         </div>
 
-        <div class="note" style="margin-top: 1rem;">
-          <strong>Calculation Notes</strong>
+        <section class="spectrum-panel" aria-labelledby="spectrum-heading">
+          <h3 id="spectrum-heading">Two-Signal Numerical Spectrum Estimate</h3>
+          <p class="spectrum-intro">
+            The plot is based on numerical waveform generation and a power spectral
+            density estimate. It is normalized to its own spectral peak in dBc.
+          </p>
+
+          <div class="plot-wrapper">
+            <canvas
+              id="spectrumCanvas"
+              role="img"
+              aria-label="Numerical spectra for Signal 1 and Signal 2"
+            >
+              Your browser does not support canvas rendering.
+            </canvas>
+          </div>
+
+          <div class="plot-legend" aria-label="Spectrum plot legend">
+            <div class="legend-item">
+              <span class="legend-swatch signal-one"></span>
+              <span id="signal1Legend">Signal 1</span>
+            </div>
+
+            <div class="legend-item">
+              <span class="legend-swatch signal-two"></span>
+              <span id="signal2Legend">Signal 2</span>
+            </div>
+
+            <div class="legend-item">
+              <span class="legend-swatch required"></span>
+              <span>Governing required-separation reference</span>
+            </div>
+          </div>
+
+          <div id="plotSummary" class="plot-summary"></div>
+        </section>
+
+        <div class="note">
+          <strong>Calculation and Plot Notes</strong>
           <ul>
             <li>
-              Equation A-1: ΔF₀ = a<sub>s</sub>n<sub>s</sub>R<sub>s</sub> + a<sub>i</sub>n<sub>i</sub>R<sub>i</sub>.
+              Equation A-1:
+              ΔF<sub>0</sub> =
+              a<sub>s</sub>n<sub>s</sub>R<sub>s</sub> +
+              a<sub>i</sub>n<sub>i</sub>R<sub>i</sub>.
             </li>
             <li>
-              The governing required separation is the larger result from the two
-              desired/interferer directions.
+              The governing separation is the larger of the two desired/interferer
+              calculations.
             </li>
             <li>
-              Pass/fail is evaluated using the unrounded governing calculation. The
-              parenthetical value is the whole-MHz ceiling for reference when frequency
-              assignments are made in 1 MHz increments.
+              Pass/fail is evaluated against the unrounded governing result. The
+              parenthetical result is the whole-MHz ceiling for reference.
             </li>
             <li>
-              Results are planning guidance only. Validate final frequency assignments,
-              receiver assumptions, operational constraints, and spectrum coordination
-              requirements through the appropriate frequency-management process.
+              The numerical plot is a planning visualization. It is not a measured
+              transmitter spectrum, spectral-mask compliance determination, received
+              power prediction, or independent interference analysis.
+            </li>
+            <li>
+              PCM/FM plotting defaults: randomized NRZ data, peak deviation of 0.35R,
+              and a four-pole Bessel-magnitude approximation with an overall
+              premodulation-filter -3 dB point of 0.7R.
+            </li>
+            <li>
+              Coded SOQPSK variants retain a SOQPSK-family shape and are widened using
+              the applicable Table A-3 over-the-air bit-rate multiplier.
             </li>
           </ul>
         </div>
@@ -553,77 +673,93 @@
   </main>
 
   <footer>
-    Coefficients and multipliers are implemented from RCC Telemetry Standards,
-    Appendix A, Equation A-1, Tables A-1 through A-3.
+    Coefficients and rate multipliers are implemented from RCC Telemetry Standards,
+    Appendix A, Equation A-1, and Tables A-1 through A-3.
   </footer>
 
   <script>
     "use strict";
 
+    /*
+      -------------------------------------
+      Frequency-Separation Data Definitions
+      -------------------------------------
+    */
+
     const waveformDefinitions = {
       "pcm-fm": {
         label: "PCM/FM",
         family: "pcm",
+        profile: "pcm",
         coded: false,
         multiplier: 1
       },
       "soqpsk-tg": {
         label: "SOQPSK-TG",
         family: "soqpsk",
+        profile: "soqpsk",
         coded: false,
         multiplier: 1
       },
       "artm-cpm": {
         label: "ARTM CPM",
         family: "artm",
+        profile: "artm",
         coded: false,
         multiplier: 1
       },
       "soqpsk-stc": {
         label: "SOQPSK-STC",
         family: "soqpsk",
+        profile: "soqpsk",
         coded: true,
         multiplier: 26 / 25
       },
       "soqpsk-ldpc-4-5": {
         label: "SOQPSK-LDPC, r = 4/5",
         family: "soqpsk",
+        profile: "soqpsk",
         coded: true,
         multiplier: 21 / 16
       },
       "soqpsk-ldpc-2-3": {
         label: "SOQPSK-LDPC, r = 2/3",
         family: "soqpsk",
+        profile: "soqpsk",
         coded: true,
         multiplier: 25 / 16
       },
       "soqpsk-ldpc-1-2": {
         label: "SOQPSK-LDPC, r = 1/2",
         family: "soqpsk",
+        profile: "soqpsk",
         coded: true,
         multiplier: 33 / 16
       },
       "soqpsk-stc-ldpc-4-5": {
         label: "SOQPSK-STC/LDPC, r = 4/5",
         family: "soqpsk",
+        profile: "soqpsk",
         coded: true,
         multiplier: 273 / 200
       },
       "soqpsk-stc-ldpc-2-3": {
         label: "SOQPSK-STC/LDPC, r = 2/3",
         family: "soqpsk",
+        profile: "soqpsk",
         coded: true,
         multiplier: 13 / 8
       },
       "soqpsk-stc-ldpc-1-2": {
         label: "SOQPSK-STC/LDPC, r = 1/2",
         family: "soqpsk",
+        profile: "soqpsk",
         coded: true,
         multiplier: 429 / 200
       }
     };
 
-    // Table A-1 coefficients when the desired signal is uncoded.
+    // Table A-1 coefficients when desired signal is uncoded.
     const tableA1DesiredCoefficients = {
       pcm: 0.80,
       soqpsk: 0.60,
@@ -636,7 +772,7 @@
       artm: 0.30
     };
 
-    // Table A-2 coefficients when the desired signal is coded.
+    // Table A-2 coefficients when desired signal is coded.
     const tableA2InterferingCoefficients = {
       pcm: 0.75,
       soqpsk: 0.35,
@@ -645,10 +781,47 @@
 
     const tableA2CodedDesiredCoefficient = 0.60;
 
+    /*
+      ---------------------------------
+      Numerical Spectrum Model Settings
+      ---------------------------------
+
+      The templates are rate-normalized. Each template is then expanded or
+      contracted on the displayed frequency axis using the signal's actual
+      over-the-air bit rate.
+
+      FFT size is intentionally moderate to keep the app responsive in a
+      browser while retaining visible PCM/FM side-lobe detail.
+    */
+
+    const SPECTRUM_FFT_SIZE = 16384;
+    const SPECTRUM_SAMPLES_PER_BIT = 8;
+    const PCM_DEVIATION_RATIO = 0.35;
+    const PCM_FILTER_3DB_RATIO = 0.70;
+    const BESSEL_4TH_ORDER_3DB_NORMALIZED_RAD = 2.1139176749;
+    const PSD_FLOOR_DBC = -80;
+
+    const spectrumTemplateCache = {};
+
+    /*
+      ----------------
+      DOM References
+      ----------------
+    */
+
     const form = document.getElementById("calculatorForm");
     const clearButton = document.getElementById("clearButton");
     const errorMessage = document.getElementById("errorMessage");
     const resultsSection = document.getElementById("resultsSection");
+    const spectrumCanvas = document.getElementById("spectrumCanvas");
+
+    let plotState = null;
+
+    /*
+      -----------------------
+      General Utility Methods
+      -----------------------
+    */
 
     function formatNumber(value, decimals = 3) {
       return Number(value).toLocaleString("en-US", {
@@ -669,6 +842,10 @@
       const roundedUpValue = Math.ceil(rawValue);
 
       return `${formatMHz(rawValue)} (${formatMHz(roundedUpValue)} rounded up)`;
+    }
+
+    function getOverTheAirRate(signal) {
+      return signal.rate * signal.waveform.multiplier;
     }
 
     function getSignal(signalNumber) {
@@ -702,6 +879,12 @@
       return null;
     }
 
+    /*
+      ------------------------------------
+      Equation A-1 Separation Calculations
+      ------------------------------------
+    */
+
     function calculateDirectionalSeparation(desired, interferer) {
       let desiredCoefficient;
       let interferingCoefficient;
@@ -729,8 +912,6 @@
       const interferingTerm =
         interferingCoefficient * interferingMultiplier * interferer.rate;
 
-      const minimumSeparation = desiredTerm + interferingTerm;
-
       return {
         desired,
         interferer,
@@ -740,7 +921,7 @@
         interferingMultiplier,
         desiredTerm,
         interferingTerm,
-        minimumSeparation,
+        minimumSeparation: desiredTerm + interferingTerm,
         tableUsed
       };
     }
@@ -813,6 +994,893 @@
       `;
     }
 
+    /*
+      ------------------------------
+      Deterministic Random Generator
+      ------------------------------
+    */
+
+    function createPrng(seed) {
+      let state = seed >>> 0;
+
+      return function random() {
+        state += 0x6D2B79F5;
+
+        let value = state;
+        value = Math.imul(value ^ (value >>> 15), value | 1);
+        value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+
+        return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    function randomSign(random) {
+      return random() >= 0.5 ? 1 : -1;
+    }
+
+    /*
+      -------------------------
+      Radix-2 FFT / Inverse FFT
+      -------------------------
+    */
+
+    function fft(real, imaginary, inverse = false) {
+      const length = real.length;
+
+      for (let index = 1, reversed = 0; index < length; index += 1) {
+        let bit = length >> 1;
+
+        for (; reversed & bit; bit >>= 1) {
+          reversed ^= bit;
+        }
+
+        reversed ^= bit;
+
+        if (index < reversed) {
+          let temporary = real[index];
+          real[index] = real[reversed];
+          real[reversed] = temporary;
+
+          temporary = imaginary[index];
+          imaginary[index] = imaginary[reversed];
+          imaginary[reversed] = temporary;
+        }
+      }
+
+      for (let blockSize = 2; blockSize <= length; blockSize <<= 1) {
+        const angle = (inverse ? 2 : -2) * Math.PI / blockSize;
+        const phaseStepReal = Math.cos(angle);
+        const phaseStepImaginary = Math.sin(angle);
+
+        for (let start = 0; start < length; start += blockSize) {
+          let twiddleReal = 1;
+          let twiddleImaginary = 0;
+          const halfBlock = blockSize >> 1;
+
+          for (let offset = 0; offset < halfBlock; offset += 1) {
+            const evenIndex = start + offset;
+            const oddIndex = evenIndex + halfBlock;
+
+            const transformedReal =
+              (twiddleReal * real[oddIndex]) -
+              (twiddleImaginary * imaginary[oddIndex]);
+
+            const transformedImaginary =
+              (twiddleReal * imaginary[oddIndex]) +
+              (twiddleImaginary * real[oddIndex]);
+
+            const evenReal = real[evenIndex];
+            const evenImaginary = imaginary[evenIndex];
+
+            real[oddIndex] = evenReal - transformedReal;
+            imaginary[oddIndex] = evenImaginary - transformedImaginary;
+
+            real[evenIndex] = evenReal + transformedReal;
+            imaginary[evenIndex] = evenImaginary + transformedImaginary;
+
+            const nextTwiddleReal =
+              (twiddleReal * phaseStepReal) -
+              (twiddleImaginary * phaseStepImaginary);
+
+            twiddleImaginary =
+              (twiddleReal * phaseStepImaginary) +
+              (twiddleImaginary * phaseStepReal);
+
+            twiddleReal = nextTwiddleReal;
+          }
+        }
+      }
+
+      if (inverse) {
+        for (let index = 0; index < length; index += 1) {
+          real[index] /= length;
+          imaginary[index] /= length;
+        }
+      }
+    }
+
+    /*
+      -------------------------------------
+      PCM/FM Numerical Waveform Generation
+      -------------------------------------
+
+      Generates randomized NRZ data; applies a four-pole Bessel-magnitude
+      response in the frequency domain; then integrates the frequency
+      modulation using deviation = 0.35R.
+
+      The filter preserves Bessel-style magnitude behavior for planning
+      visualization. It is not a substitute for a calibrated transmitter,
+      a measured premodulation filter, or a spectrum-analyzer measurement.
+    */
+
+    function applyPcmBesselMagnitudeFilter(samples) {
+      const length = samples.length;
+      const real = new Float64Array(samples);
+      const imaginary = new Float64Array(length);
+
+      fft(real, imaginary);
+
+      const desiredThreeDbAngularFrequency =
+        2 * Math.PI * PCM_FILTER_3DB_RATIO;
+
+      const besselAngularScale =
+        desiredThreeDbAngularFrequency /
+        BESSEL_4TH_ORDER_3DB_NORMALIZED_RAD;
+
+      for (let index = 0; index < length; index += 1) {
+        const signedBin =
+          index <= length / 2 ? index : index - length;
+
+        const normalizedFrequency =
+          (signedBin * SPECTRUM_SAMPLES_PER_BIT) / length;
+
+        const angularFrequency =
+          2 * Math.PI * normalizedFrequency;
+
+        const normalizedAngularFrequency =
+          angularFrequency / besselAngularScale;
+
+        const u = normalizedAngularFrequency;
+        const u2 = u * u;
+        const u3 = u2 * u;
+        const u4 = u2 * u2;
+
+        /*
+          Fourth-order Bessel polynomial:
+          s^4 + 10s^3 + 45s^2 + 105s + 105
+
+          Magnitude is applied without phase rotation because the numerical
+          spectrum estimate is concerned with magnitude/PSD behavior.
+        */
+        const denominatorReal = u4 - (45 * u2) + 105;
+        const denominatorImaginary = (-10 * u3) + (105 * u);
+
+        const magnitude =
+          105 /
+          Math.sqrt(
+            (denominatorReal * denominatorReal) +
+            (denominatorImaginary * denominatorImaginary)
+          );
+
+        real[index] *= magnitude;
+        imaginary[index] *= magnitude;
+      }
+
+      fft(real, imaginary, true);
+
+      return real;
+    }
+
+    function generatePcmFmWaveform(length) {
+      const random = createPrng(0xA1B2C3D4);
+      const baseband = new Float64Array(length);
+
+      let sampleIndex = 0;
+
+      while (sampleIndex < length) {
+        const bitValue = randomSign(random);
+
+        for (
+          let bitSample = 0;
+          bitSample < SPECTRUM_SAMPLES_PER_BIT && sampleIndex < length;
+          bitSample += 1
+        ) {
+          baseband[sampleIndex] = bitValue;
+          sampleIndex += 1;
+        }
+      }
+
+      const filteredBaseband = applyPcmBesselMagnitudeFilter(baseband);
+
+      const real = new Float64Array(length);
+      const imaginary = new Float64Array(length);
+
+      let phase = 0;
+
+      for (let index = 0; index < length; index += 1) {
+        phase +=
+          2 *
+          Math.PI *
+          (PCM_DEVIATION_RATIO / SPECTRUM_SAMPLES_PER_BIT) *
+          filteredBaseband[index];
+
+        real[index] = Math.cos(phase);
+        imaginary[index] = Math.sin(phase);
+      }
+
+      return { real, imaginary };
+    }
+
+    /*
+      --------------------------------------
+      SOQPSK-Family Numerical Waveform Model
+      --------------------------------------
+
+      The SOQPSK family is modeled using a shaped offset-QPSK approximation.
+      Coded variants use the same rate-normalized spectral shape and are
+      subsequently widened by their Table A-3 over-the-air rate multiplier.
+    */
+
+    function generateSoqpskWaveform(length) {
+      const random = createPrng(0x12345678);
+      const real = new Float64Array(length);
+      const imaginary = new Float64Array(length);
+
+      const symbolSamples = SPECTRUM_SAMPLES_PER_BIT * 2;
+      const qDelaySamples = symbolSamples / 2;
+      const pulseLength = symbolSamples * 2;
+      const symbolCount = Math.ceil(length / symbolSamples) + 4;
+
+      for (let symbol = -2; symbol < symbolCount; symbol += 1) {
+        const inPhaseSymbol = randomSign(random);
+        const quadratureSymbol = randomSign(random);
+
+        const inPhaseStart = symbol * symbolSamples;
+        const quadratureStart = inPhaseStart + qDelaySamples;
+
+        for (let pulseIndex = 0; pulseIndex < pulseLength; pulseIndex += 1) {
+          const pulse =
+            Math.sin(
+              (Math.PI * (pulseIndex + 0.5)) / pulseLength
+            );
+
+          const inPhaseIndex = inPhaseStart + pulseIndex;
+          const quadratureIndex = quadratureStart + pulseIndex;
+
+          if (inPhaseIndex >= 0 && inPhaseIndex < length) {
+            real[inPhaseIndex] += inPhaseSymbol * pulse;
+          }
+
+          if (quadratureIndex >= 0 && quadratureIndex < length) {
+            imaginary[quadratureIndex] += quadratureSymbol * pulse;
+          }
+        }
+      }
+
+      /*
+        Normalize to approximate constant-envelope offset-QPSK behavior.
+      */
+      for (let index = 0; index < length; index += 1) {
+        const magnitude = Math.hypot(real[index], imaginary[index]);
+
+        if (magnitude > 1e-10) {
+          real[index] /= magnitude;
+          imaginary[index] /= magnitude;
+        } else {
+          real[index] = 1;
+          imaginary[index] = 0;
+        }
+      }
+
+      return { real, imaginary };
+    }
+
+    /*
+      --------------------------------
+      ARTM CPM Numerical Waveform Model
+      --------------------------------
+
+      Uses a quaternary alphabet, alternating modulation indices of 4/16
+      and 5/16, and a temporal raised-cosine frequency pulse spanning
+      three symbol periods.
+    */
+
+    function generateArtmCpmWaveform(length) {
+      const random = createPrng(0xCAFEBABE);
+      const real = new Float64Array(length);
+      const imaginary = new Float64Array(length);
+
+      const symbolSamples = SPECTRUM_SAMPLES_PER_BIT * 2;
+      const pulseLength = symbolSamples * 3;
+      const symbolCount = Math.ceil(length / symbolSamples) + 4;
+      const phaseIncrement = new Float64Array(length);
+      const frequencyPulse = new Float64Array(pulseLength);
+
+      let pulseSum = 0;
+
+      for (let index = 0; index < pulseLength; index += 1) {
+        const rawPulse =
+          1 -
+          Math.cos(
+            (2 * Math.PI * (index + 0.5)) / pulseLength
+          );
+
+        frequencyPulse[index] = rawPulse;
+        pulseSum += rawPulse;
+      }
+
+      /*
+        Normalize the pulse so its discrete area is 1/2, consistent with
+        the CPM frequency-pulse convention used for phase accumulation.
+      */
+      for (let index = 0; index < pulseLength; index += 1) {
+        frequencyPulse[index] =
+          (frequencyPulse[index] * 0.5) / pulseSum;
+      }
+
+      for (let symbol = 0; symbol < symbolCount; symbol += 1) {
+        const randomValue = Math.floor(random() * 4);
+
+        let alpha;
+
+        switch (randomValue) {
+          case 0:
+            alpha = -3;
+            break;
+          case 1:
+            alpha = -1;
+            break;
+          case 2:
+            alpha = 1;
+            break;
+          default:
+            alpha = 3;
+            break;
+        }
+
+        const modulationIndex =
+          symbol % 2 === 0 ? (4 / 16) : (5 / 16);
+
+        const startIndex = symbol * symbolSamples;
+
+        for (let pulseIndex = 0; pulseIndex < pulseLength; pulseIndex += 1) {
+          const waveformIndex = startIndex + pulseIndex;
+
+          if (waveformIndex >= length) {
+            break;
+          }
+
+          phaseIncrement[waveformIndex] +=
+            alpha *
+            modulationIndex *
+            frequencyPulse[pulseIndex];
+        }
+      }
+
+      let phase = 0;
+
+      for (let index = 0; index < length; index += 1) {
+        phase += 2 * Math.PI * phaseIncrement[index];
+        real[index] = Math.cos(phase);
+        imaginary[index] = Math.sin(phase);
+      }
+
+      return { real, imaginary };
+    }
+
+    /*
+      ---------------------------
+      Numerical PSD Determination
+      ---------------------------
+    */
+
+    function applyHannWindow(real, imaginary) {
+      const length = real.length;
+
+      for (let index = 0; index < length; index += 1) {
+        const window =
+          0.5 -
+          (0.5 * Math.cos((2 * Math.PI * index) / (length - 1)));
+
+        real[index] *= window;
+        imaginary[index] *= window;
+      }
+    }
+
+    function smoothLinearPower(powerValues, radius = 2) {
+      const output = new Float64Array(powerValues.length);
+
+      for (let index = 0; index < powerValues.length; index += 1) {
+        let sum = 0;
+        let samples = 0;
+
+        const start = Math.max(0, index - radius);
+        const end = Math.min(powerValues.length - 1, index + radius);
+
+        for (let neighbor = start; neighbor <= end; neighbor += 1) {
+          sum += powerValues[neighbor];
+          samples += 1;
+        }
+
+        output[index] = sum / samples;
+      }
+
+      return output;
+    }
+
+    function calculatePsdTemplate(waveform) {
+      const real = new Float64Array(waveform.real);
+      const imaginary = new Float64Array(waveform.imaginary);
+      const length = real.length;
+      const halfLength = length / 2;
+
+      applyHannWindow(real, imaginary);
+      fft(real, imaginary);
+
+      const rawPower = new Float64Array(halfLength + 1);
+
+      for (let index = 0; index <= halfLength; index += 1) {
+        const positivePower =
+          (real[index] * real[index]) +
+          (imaginary[index] * imaginary[index]);
+
+        if (index === 0 || index === halfLength) {
+          rawPower[index] = positivePower;
+        } else {
+          const negativeIndex = length - index;
+          const negativePower =
+            (real[negativeIndex] * real[negativeIndex]) +
+            (imaginary[negativeIndex] * imaginary[negativeIndex]);
+
+          /*
+            The displayed curves are made symmetric around the center
+            frequency for randomized PCM/FM, SOQPSK-family, and ARTM CPM.
+          */
+          rawPower[index] = (positivePower + negativePower) / 2;
+        }
+      }
+
+      const smoothedPower = smoothLinearPower(rawPower, 2);
+
+      let maximumPower = Number.MIN_VALUE;
+
+      for (let index = 0; index < smoothedPower.length; index += 1) {
+        maximumPower = Math.max(maximumPower, smoothedPower[index]);
+      }
+
+      const dbValues = new Float64Array(smoothedPower.length);
+
+      for (let index = 0; index < smoothedPower.length; index += 1) {
+        const normalizedPower =
+          Math.max(smoothedPower[index] / maximumPower, 1e-12);
+
+        dbValues[index] = Math.max(
+          PSD_FLOOR_DBC,
+          10 * Math.log10(normalizedPower)
+        );
+      }
+
+      return {
+        values: dbValues,
+        step:
+          SPECTRUM_SAMPLES_PER_BIT / length,
+        maximumNormalizedOffset:
+          SPECTRUM_SAMPLES_PER_BIT / 2
+      };
+    }
+
+    function getSpectrumTemplate(profile) {
+      if (spectrumTemplateCache[profile]) {
+        return spectrumTemplateCache[profile];
+      }
+
+      let waveform;
+
+      switch (profile) {
+        case "pcm":
+          waveform = generatePcmFmWaveform(SPECTRUM_FFT_SIZE);
+          break;
+
+        case "artm":
+          waveform = generateArtmCpmWaveform(SPECTRUM_FFT_SIZE);
+          break;
+
+        case "soqpsk":
+        default:
+          waveform = generateSoqpskWaveform(SPECTRUM_FFT_SIZE);
+          break;
+      }
+
+      spectrumTemplateCache[profile] = calculatePsdTemplate(waveform);
+
+      return spectrumTemplateCache[profile];
+    }
+
+    function interpolateTemplatePowerDbc(template, normalizedOffset) {
+      const absoluteOffset = Math.abs(normalizedOffset);
+
+      if (absoluteOffset >= template.maximumNormalizedOffset) {
+        return PSD_FLOOR_DBC;
+      }
+
+      const fractionalIndex = absoluteOffset / template.step;
+      const lowerIndex = Math.floor(fractionalIndex);
+      const upperIndex = Math.min(
+        lowerIndex + 1,
+        template.values.length - 1
+      );
+
+      const interpolation = fractionalIndex - lowerIndex;
+
+      const lowerValue = template.values[lowerIndex];
+      const upperValue = template.values[upperIndex];
+
+      return Math.max(
+        PSD_FLOOR_DBC,
+        lowerValue + ((upperValue - lowerValue) * interpolation)
+      );
+    }
+
+    function getSpectrumPowerDbc(signal, frequencyMHz) {
+      const overTheAirRate = getOverTheAirRate(signal);
+      const normalizedOffset =
+        (frequencyMHz - signal.frequency) / overTheAirRate;
+
+      const template = getSpectrumTemplate(signal.waveform.profile);
+
+      return interpolateTemplatePowerDbc(template, normalizedOffset);
+    }
+
+    /*
+      -----------------
+      Canvas Plot Logic
+      -----------------
+    */
+
+    function drawDashedLine(context, x1, y1, x2, y2, color, width = 1) {
+      context.save();
+      context.setLineDash([6, 5]);
+      context.beginPath();
+      context.moveTo(x1, y1);
+      context.lineTo(x2, y2);
+      context.strokeStyle = color;
+      context.lineWidth = width;
+      context.stroke();
+      context.restore();
+    }
+
+    function drawArrowLine(context, x1, y, x2, color, label, labelY) {
+      const direction = x2 >= x1 ? 1 : -1;
+      const arrowSize = 6;
+
+      context.save();
+      context.strokeStyle = color;
+      context.fillStyle = color;
+      context.lineWidth = 1.5;
+      context.setLineDash([5, 4]);
+
+      context.beginPath();
+      context.moveTo(x1, y);
+      context.lineTo(x2, y);
+      context.stroke();
+
+      [x1, x2].forEach((x, index) => {
+        const sign = index === 0 ? direction : -direction;
+
+        context.beginPath();
+        context.moveTo(x, y);
+        context.lineTo(x + (sign * arrowSize), y - (arrowSize / 2));
+        context.lineTo(x + (sign * arrowSize), y + (arrowSize / 2));
+        context.closePath();
+        context.fill();
+      });
+
+      context.setLineDash([]);
+      context.font = "12px Arial";
+      context.textAlign = "center";
+      context.fillText(label, (x1 + x2) / 2, labelY);
+      context.restore();
+    }
+
+    function getNiceTickStep(span, targetTickCount = 8) {
+      const rawStep = span / targetTickCount;
+      const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+      const normalizedStep = rawStep / magnitude;
+
+      let niceStep;
+
+      if (normalizedStep <= 1) {
+        niceStep = 1;
+      } else if (normalizedStep <= 2) {
+        niceStep = 2;
+      } else if (normalizedStep <= 5) {
+        niceStep = 5;
+      } else {
+        niceStep = 10;
+      }
+
+      return niceStep * magnitude;
+    }
+
+    function drawSpectrumPlot(signal1, signal2, actualSeparation, governingSeparation) {
+      const context = spectrumCanvas.getContext("2d");
+      const displayWidth = spectrumCanvas.clientWidth;
+      const displayHeight = spectrumCanvas.clientHeight;
+      const pixelRatio = window.devicePixelRatio || 1;
+
+      if (!context || !displayWidth || !displayHeight) {
+        return;
+      }
+
+      spectrumCanvas.width = Math.floor(displayWidth * pixelRatio);
+      spectrumCanvas.height = Math.floor(displayHeight * pixelRatio);
+
+      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+      context.clearRect(0, 0, displayWidth, displayHeight);
+
+      const margin = {
+        top: 38,
+        right: 28,
+        bottom: 98,
+        left: 66
+      };
+
+      const plotLeft = margin.left;
+      const plotRight = displayWidth - margin.right;
+      const plotTop = margin.top;
+      const plotBottom = displayHeight - margin.bottom;
+      const plotWidth = plotRight - plotLeft;
+      const plotHeight = plotBottom - plotTop;
+
+      const rate1 = getOverTheAirRate(signal1);
+      const rate2 = getOverTheAirRate(signal2);
+
+      const directionSign =
+        signal2.frequency >= signal1.frequency ? 1 : -1;
+
+      const governingEnd =
+        signal1.frequency + (directionSign * governingSeparation);
+
+      const visibleTailFactor = 2.7;
+
+      const frequencyBounds = [
+        signal1.frequency - (visibleTailFactor * rate1),
+        signal1.frequency + (visibleTailFactor * rate1),
+        signal2.frequency - (visibleTailFactor * rate2),
+        signal2.frequency + (visibleTailFactor * rate2),
+        signal1.frequency,
+        signal2.frequency,
+        governingEnd
+      ];
+
+      let minimumFrequency = Math.min(...frequencyBounds);
+      let maximumFrequency = Math.max(...frequencyBounds);
+
+      const initialSpan = Math.max(maximumFrequency - minimumFrequency, 1);
+      const padding = Math.max(initialSpan * 0.10, 0.5);
+
+      minimumFrequency -= padding;
+      maximumFrequency += padding;
+
+      const frequencySpan = maximumFrequency - minimumFrequency;
+      const minimumPower = PSD_FLOOR_DBC;
+      const maximumPower = 0;
+
+      const xFromFrequency = (frequency) =>
+        plotLeft +
+        (((frequency - minimumFrequency) / frequencySpan) * plotWidth);
+
+      const yFromPower = (powerDbc) =>
+        plotTop +
+        (((maximumPower - powerDbc) / (maximumPower - minimumPower)) * plotHeight);
+
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, displayWidth, displayHeight);
+
+      context.fillStyle = "#0b1f3a";
+      context.font = "bold 14px Arial";
+      context.textAlign = "left";
+      context.fillText("Numerical Power Spectral Density Estimate", plotLeft, 20);
+
+      /*
+        Horizontal power grid.
+      */
+      context.font = "12px Arial";
+      context.textAlign = "right";
+
+      for (let power = 0; power >= PSD_FLOOR_DBC; power -= 10) {
+        const y = yFromPower(power);
+
+        context.strokeStyle = power === 0 ? "#8ca1b8" : "#dce5ee";
+        context.lineWidth = power === 0 ? 1.2 : 1;
+
+        context.beginPath();
+        context.moveTo(plotLeft, y);
+        context.lineTo(plotRight, y);
+        context.stroke();
+
+        context.fillStyle = "#33485d";
+        context.fillText(`${power}`, plotLeft - 9, y + 4);
+      }
+
+      /*
+        Vertical frequency grid.
+      */
+      const tickStep = getNiceTickStep(frequencySpan);
+      const firstTick =
+        Math.ceil(minimumFrequency / tickStep) * tickStep;
+
+      context.textAlign = "center";
+
+      for (
+        let frequency = firstTick;
+        frequency <= maximumFrequency + (tickStep * 0.1);
+        frequency += tickStep
+      ) {
+        const x = xFromFrequency(frequency);
+
+        context.strokeStyle = "#dce5ee";
+        context.lineWidth = 1;
+
+        context.beginPath();
+        context.moveTo(x, plotTop);
+        context.lineTo(x, plotBottom);
+        context.stroke();
+
+        context.fillStyle = "#33485d";
+        context.fillText(formatNumber(frequency, 3), x, plotBottom + 18);
+      }
+
+      /*
+        Axis lines and labels.
+      */
+      context.strokeStyle = "#526f8d";
+      context.lineWidth = 1.2;
+
+      context.beginPath();
+      context.moveTo(plotLeft, plotTop);
+      context.lineTo(plotLeft, plotBottom);
+      context.lineTo(plotRight, plotBottom);
+      context.stroke();
+
+      context.save();
+      context.fillStyle = "#17212b";
+      context.font = "bold 12px Arial";
+      context.textAlign = "center";
+
+      context.fillText(
+        "Frequency (MHz)",
+        plotLeft + (plotWidth / 2),
+        displayHeight - 8
+      );
+
+      context.translate(16, plotTop + (plotHeight / 2));
+      context.rotate(-Math.PI / 2);
+      context.fillText("Relative Power (dBc)", 0, 0);
+      context.restore();
+
+      /*
+        Spectrum curves.
+      */
+      const drawSignalSpectrum = (signal, color) => {
+        const pointCount = 1000;
+
+        context.save();
+        context.beginPath();
+
+        for (let point = 0; point <= pointCount; point += 1) {
+          const frequency =
+            minimumFrequency +
+            ((frequencySpan * point) / pointCount);
+
+          const power = getSpectrumPowerDbc(signal, frequency);
+          const x = xFromFrequency(frequency);
+          const y = yFromPower(power);
+
+          if (point === 0) {
+            context.moveTo(x, y);
+          } else {
+            context.lineTo(x, y);
+          }
+        }
+
+        context.strokeStyle = color;
+        context.lineWidth = 2.25;
+        context.stroke();
+        context.restore();
+      };
+
+      drawSignalSpectrum(signal1, "#1565c0");
+      drawSignalSpectrum(signal2, "#c64a00");
+
+      /*
+        Center-frequency markers.
+      */
+      const drawCenterMarker = (signal, color, label, labelOffset) => {
+        const x = xFromFrequency(signal.frequency);
+
+        drawDashedLine(context, x, plotTop, x, plotBottom, color, 1.5);
+
+        context.fillStyle = color;
+        context.font = "bold 12px Arial";
+        context.textAlign = "center";
+        context.fillText(label, x, plotTop + labelOffset);
+      };
+
+      drawCenterMarker(signal1, "#1565c0", "Signal 1 Center", 14);
+      drawCenterMarker(signal2, "#c64a00", "Signal 2 Center", 29);
+
+      /*
+        Actual and required separation references.
+      */
+      const signal1CenterX = xFromFrequency(signal1.frequency);
+      const signal2CenterX = xFromFrequency(signal2.frequency);
+      const governingEndX = xFromFrequency(governingEnd);
+
+      drawArrowLine(
+        context,
+        signal1CenterX,
+        plotBottom + 35,
+        signal2CenterX,
+        "#34495e",
+        `Actual ΔF = ${formatMHz(actualSeparation)}`,
+        plotBottom + 31
+      );
+
+      drawArrowLine(
+        context,
+        signal1CenterX,
+        plotBottom + 62,
+        governingEndX,
+        "#9b1c1c",
+        `Required ΔF₀ = ${formatGoverningSeparation(governingSeparation)}`,
+        plotBottom + 58
+      );
+    }
+
+    function updateSpectrumDisplay(
+      signal1,
+      signal2,
+      actualSeparation,
+      governingSeparation
+    ) {
+      const signal1OtaRate = getOverTheAirRate(signal1);
+      const signal2OtaRate = getOverTheAirRate(signal2);
+
+      document.getElementById("signal1Legend").textContent =
+        `Signal 1: ${signal1.waveform.label}; OTA rate ${formatNumber(signal1OtaRate)} Mbps`;
+
+      document.getElementById("signal2Legend").textContent =
+        `Signal 2: ${signal2.waveform.label}; OTA rate ${formatNumber(signal2OtaRate)} Mbps`;
+
+      document.getElementById("plotSummary").textContent =
+        `Actual center separation: ${formatMHz(actualSeparation)}. ` +
+        `Governing Equation A-1 separation: ${formatGoverningSeparation(governingSeparation)}. ` +
+        `PCM/FM uses a numerical randomized-NRZ FM model with the selected default planning parameters. ` +
+        `SOQPSK-family and ARTM CPM curves use distinct numerical waveform models. ` +
+        `All curves are normalized to their own peak power in dBc.`;
+
+      plotState = {
+        signal1,
+        signal2,
+        actualSeparation,
+        governingSeparation
+      };
+
+      drawSpectrumPlot(
+        signal1,
+        signal2,
+        actualSeparation,
+        governingSeparation
+      );
+    }
+
+    /*
+      -----------------------
+      Result-Display Methods
+      -----------------------
+    */
+
     function showError(message) {
       errorMessage.textContent = message;
       errorMessage.style.display = "block";
@@ -825,7 +1893,9 @@
     }
 
     function showResults(signal1, signal2, direction1, direction2) {
-      const actualSeparation = Math.abs(signal1.frequency - signal2.frequency);
+      const actualSeparation =
+        Math.abs(signal1.frequency - signal2.frequency);
+
       const governingSeparation = Math.max(
         direction1.minimumSeparation,
         direction2.minimumSeparation
@@ -833,7 +1903,8 @@
 
       const margin = actualSeparation - governingSeparation;
       const meetsGuidance = actualSeparation >= governingSeparation;
-      const governingDisplay = formatGoverningSeparation(governingSeparation);
+      const governingDisplay =
+        formatGoverningSeparation(governingSeparation);
 
       document.getElementById("actualSeparation").textContent =
         formatMHz(actualSeparation);
@@ -847,11 +1918,17 @@
       document.getElementById("governingResult").textContent =
         governingDisplay;
 
-      document.getElementById("equation1").textContent = createEquation(direction1);
-      document.getElementById("equation2").textContent = createEquation(direction2);
+      document.getElementById("equation1").textContent =
+        createEquation(direction1);
 
-      document.getElementById("details1").innerHTML = createDetailsRows(direction1);
-      document.getElementById("details2").innerHTML = createDetailsRows(direction2);
+      document.getElementById("equation2").textContent =
+        createEquation(direction2);
+
+      document.getElementById("details1").innerHTML =
+        createDetailsRows(direction1);
+
+      document.getElementById("details2").innerHTML =
+        createDetailsRows(direction2);
 
       const statusBox = document.getElementById("statusBox");
       const statusTitle = document.getElementById("statusTitle");
@@ -863,22 +1940,49 @@
       if (meetsGuidance) {
         statusBox.classList.add("meets");
         statusTitle.textContent = "MEETS MINIMUM SEPARATION GUIDANCE";
+
         statusText.textContent =
           `Actual center-frequency separation (${formatMHz(actualSeparation)}) is equal to or greater than the governing minimum required separation (${governingDisplay}).`;
+
         marginText.textContent =
           `Available separation margin: ${formatMHz(margin)}.`;
       } else {
         statusBox.classList.add("does-not-meet");
         statusTitle.textContent = "DOES NOT MEET MINIMUM SEPARATION GUIDANCE";
+
         statusText.textContent =
           `Actual center-frequency separation (${formatMHz(actualSeparation)}) is less than the governing minimum required separation (${governingDisplay}).`;
+
         marginText.textContent =
           `Additional separation needed: ${formatMHz(Math.abs(margin))}.`;
       }
 
       resultsSection.style.display = "block";
-      resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      /*
+        Let the results section become visible before canvas dimensions are
+        measured and the numerical spectra are rendered.
+      */
+      requestAnimationFrame(() => {
+        updateSpectrumDisplay(
+          signal1,
+          signal2,
+          actualSeparation,
+          governingSeparation
+        );
+      });
+
+      resultsSection.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
     }
+
+    /*
+      ----------------
+      Event Listeners
+      ----------------
+    */
 
     form.addEventListener("submit", function (event) {
       event.preventDefault();
@@ -900,8 +2004,11 @@
         return;
       }
 
-      const direction1 = calculateDirectionalSeparation(signal1, signal2);
-      const direction2 = calculateDirectionalSeparation(signal2, signal1);
+      const direction1 =
+        calculateDirectionalSeparation(signal1, signal2);
+
+      const direction2 =
+        calculateDirectionalSeparation(signal2, signal1);
 
       showResults(signal1, signal2, direction1, direction2);
     });
@@ -909,8 +2016,22 @@
     clearButton.addEventListener("click", function () {
       form.reset();
       clearError();
+
+      plotState = null;
       resultsSection.style.display = "none";
+
       document.getElementById("frequency1").focus();
+    });
+
+    window.addEventListener("resize", function () {
+      if (plotState) {
+        drawSpectrumPlot(
+          plotState.signal1,
+          plotState.signal2,
+          plotState.actualSeparation,
+          plotState.governingSeparation
+        );
+      }
     });
   </script>
 </body>
