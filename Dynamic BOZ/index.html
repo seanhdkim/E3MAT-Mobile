@@ -8,7 +8,6 @@
   />
   <title>Dynamic BOZ Calculator</title>
 
-  <!-- Leaflet map library -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -18,15 +17,13 @@
     :root {
       --blue: #0b4f8a;
       --blue-dark: #063663;
-      --green: #0c6b3b;
-      --red: #9f1d1d;
-      --orange: #a84e00;
+      --green: #087443;
+      --red: #a11d1d;
       --gray-100: #f4f6f8;
-      --gray-200: #e2e8ee;
-      --gray-500: #64748b;
-      --gray-800: #1e293b;
+      --gray-200: #dce3e9;
+      --gray-600: #556575;
+      --gray-800: #1f2937;
       --white: #ffffff;
-      --border-radius: 10px;
     }
 
     * {
@@ -36,16 +33,16 @@
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: Arial, Helvetica, sans-serif;
       color: var(--gray-800);
+      font-family: Arial, Helvetica, sans-serif;
       background: var(--gray-100);
     }
 
     header {
+      padding: 16px 20px;
       color: var(--white);
       background: var(--blue-dark);
-      padding: 16px 20px;
-      border-bottom: 4px solid #1f7ac4;
+      border-bottom: 4px solid #227fc6;
     }
 
     header h1 {
@@ -54,31 +51,31 @@
     }
 
     header p {
-      margin: 5px 0 0;
+      margin: 6px 0 0;
       font-size: 0.9rem;
       opacity: 0.9;
     }
 
     main {
       display: grid;
-      grid-template-columns: minmax(330px, 460px) minmax(400px, 1fr);
+      grid-template-columns: minmax(330px, 470px) minmax(400px, 1fr);
       gap: 16px;
+      min-height: calc(100vh - 90px);
       padding: 16px;
-      min-height: calc(100vh - 88px);
     }
 
     .card {
+      padding: 16px;
       background: var(--white);
       border: 1px solid var(--gray-200);
-      border-radius: var(--border-radius);
+      border-radius: 10px;
       box-shadow: 0 2px 7px rgba(0, 0, 0, 0.08);
-      padding: 16px;
     }
 
     .card h2 {
       margin: 0 0 12px;
-      font-size: 1.05rem;
       color: var(--blue-dark);
+      font-size: 1.05rem;
     }
 
     .section {
@@ -99,23 +96,19 @@
       gap: 10px;
     }
 
-    .form-grid.three-column {
-      grid-template-columns: 1fr 1fr 1fr;
-    }
-
     label {
       display: block;
       margin-bottom: 4px;
+      color: #334155;
       font-size: 0.8rem;
       font-weight: bold;
-      color: #334155;
     }
 
     input,
     select,
     button {
-      min-height: 38px;
       width: 100%;
+      min-height: 38px;
       border-radius: 6px;
       font: inherit;
     }
@@ -134,26 +127,20 @@
       border-color: #3b82f6;
     }
 
-    button,
-    .button-link {
+    button {
       padding: 8px 12px;
       cursor: pointer;
-      text-align: center;
-      text-decoration: none;
       border: 1px solid transparent;
-      transition: background 0.15s ease, opacity 0.15s ease;
+      transition: opacity 0.15s ease;
     }
 
-    button:hover,
-    .button-link:hover {
-      opacity: 0.9;
+    button:hover:not(:disabled) {
+      opacity: 0.88;
     }
 
-    button:disabled,
-    .button-link.disabled {
+    button:disabled {
       cursor: not-allowed;
       opacity: 0.5;
-      pointer-events: none;
     }
 
     .button-primary {
@@ -173,7 +160,7 @@
 
     .button-secondary {
       color: var(--gray-800);
-      background: #e8edf2;
+      background: #e6edf4;
       border-color: #c7d1db;
     }
 
@@ -190,7 +177,7 @@
     }
 
     .receiver-table-container {
-      max-height: 280px;
+      max-height: 260px;
       overflow-y: auto;
       border: 1px solid var(--gray-200);
       border-radius: 6px;
@@ -206,7 +193,6 @@
     td {
       padding: 8px;
       text-align: left;
-      vertical-align: middle;
       border-bottom: 1px solid var(--gray-200);
     }
 
@@ -233,9 +219,21 @@
       font-size: 0.75rem;
     }
 
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      font-size: 0.84rem;
+    }
+
+    .checkbox-row input {
+      width: auto;
+      min-height: auto;
+    }
+
     .result-grid {
       display: grid;
-      grid-template-columns: 1fr;
       gap: 8px;
     }
 
@@ -280,23 +278,9 @@
 
     .note {
       margin: 10px 0 0;
-      color: var(--gray-500);
+      color: var(--gray-600);
       font-size: 0.78rem;
       line-height: 1.35;
-    }
-
-    .checkbox-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-top: 10px;
-      font-size: 0.85rem;
-    }
-
-    .checkbox-row input {
-      width: auto;
-      min-height: auto;
-      transform: scale(1.1);
     }
 
     .map-card {
@@ -308,25 +292,14 @@
     #map {
       flex: 1;
       min-height: 550px;
+      overflow: hidden;
       border: 1px solid var(--gray-200);
       border-radius: 8px;
-      overflow: hidden;
-    }
-
-    .map-note {
-      margin: 10px 0 0;
-      color: var(--gray-500);
-      font-size: 0.78rem;
-      line-height: 1.35;
     }
 
     @media (max-width: 950px) {
       main {
         grid-template-columns: 1fr;
-      }
-
-      .map-card {
-        min-height: 520px;
       }
 
       #map {
@@ -336,8 +309,8 @@
 
     @media (max-width: 500px) {
       main {
-        padding: 10px;
         gap: 10px;
+        padding: 10px;
       }
 
       .card {
@@ -345,7 +318,6 @@
       }
 
       .form-grid,
-      .form-grid.three-column,
       .button-row {
         grid-template-columns: 1fr;
       }
@@ -361,7 +333,7 @@
   <header>
     <h1>Dynamic BOZ Calculator</h1>
     <p>
-      Enter receiver locations, calculate an enclosing BOZ, and view the result.
+      Enter receiver locations, calculate an enclosing BOZ, and plot the result.
     </p>
   </header>
 
@@ -401,7 +373,7 @@
               min="-180"
               max="180"
               step="0.000001"
-              placeholder="Example: -119.5714"
+              placeholder="Example: -179.0000"
             />
           </div>
 
@@ -423,7 +395,7 @@
         </div>
 
         <p class="note">
-          Up to 40 receivers are supported in this browser-only version.
+          This browser implementation supports up to 40 receivers.
           Receiver names are optional.
         </p>
       </div>
@@ -519,7 +491,6 @@
             id="openGoogleMapsButton"
             class="button-google"
             disabled
-            title="Opens the calculated BOZ center in Google Maps"
           >
             Open Center in Google Maps
           </button>
@@ -531,7 +502,7 @@
 
         <p class="note">
           The Google Maps button opens the calculated center location.
-          The BOZ circle itself remains visible in this web application.
+          The enclosing BOZ circle remains visible in this web app.
         </p>
       </div>
     </section>
@@ -539,9 +510,9 @@
     <section class="card map-card">
       <h2>Dynamic BOZ Plot</h2>
       <div id="map"></div>
-      <p class="map-note">
-        Red markers show receiver locations. Red dashed polygons show
-        individual receiver BOZs. The blue marker and blue boundary show
+      <p class="note">
+        Red markers are receiver locations. Dashed red boundaries are
+        individual receiver BOZs. The blue marker and blue boundary are
         the calculated enclosing BOZ.
       </p>
     </section>
@@ -555,16 +526,13 @@
     /*
      * Dynamic BOZ Calculator
      *
-     * Computation:
-     *   1. Uses spherical candidate centers to create good initial seeds.
-     *   2. Refines each candidate using WGS-84 Vincenty geodesic distances.
-     *   3. Finds a center that minimizes the greatest receiver-center distance.
-     *   4. Adds the common receiver BOZ radius:
+     * Important geometry rule:
      *
-     *      EnclosingRadius =
-     *          max(distance(Center, Receiver_i)) + ReceiverBOZRadius
+     *   enclosingRadius =
+     *       max(distance(enclosingCenter, receiverCenter_i))
+     *       + receiverBOZRadius
      *
-     * The result encloses all receiver BOZs if they share the selected radius.
+     * All receiver BOZs use the common radius entered in the UI.
      */
 
     const WGS84 = {
@@ -596,16 +564,20 @@
     const outputLongitude = document.getElementById("outputLongitude");
     const outputRadius = document.getElementById("outputRadius");
 
+    const calculateButton = document.getElementById("calculateButton");
     const openGoogleMapsButton =
       document.getElementById("openGoogleMapsButton");
-
     const fitMapButton = document.getElementById("fitMapButton");
 
     /*
-     * Leaflet map. This map uses OpenStreetMap tiles.
+     * Leaflet map.
+     *
+     * worldCopyJump permits a continuous map display when the view crosses
+     * the International Date Line.
      */
     const map = L.map("map", {
       worldCopyJump: true,
+      preferCanvas: true,
       zoomControl: true
     }).setView([20, 0], 2);
 
@@ -623,7 +595,7 @@
     const calculatedBOZLayer = L.layerGroup().addTo(map);
 
     /*
-     * Event listeners
+     * Event Handlers
      */
     document
       .getElementById("addReceiverButton")
@@ -637,21 +609,18 @@
       .getElementById("addExampleButton")
       .addEventListener("click", addExampleReceivers);
 
-    document
-      .getElementById("calculateButton")
-      .addEventListener("click", calculateBOZ);
+    calculateButton.addEventListener("click", calculateBOZ);
 
     openGoogleMapsButton.addEventListener("click", openGoogleMaps);
 
     fitMapButton.addEventListener("click", fitMapToCalculation);
 
     showIndividualBOZsCheckbox.addEventListener("change", updateMap);
-
     receiverRadiusInput.addEventListener("change", updateMap);
     radiusUnitSelect.addEventListener("change", updateMap);
 
     /*
-     * Receiver Management
+     * Receiver Entry and Table Management
      */
 
     function addReceiverFromForm() {
@@ -690,17 +659,16 @@
         return;
       }
 
-      const inputName = receiverNameInput.value.trim();
-      const name =
-        inputName.length > 0
-          ? inputName
+      const enteredName = receiverNameInput.value.trim();
+
+      const receiverName =
+        enteredName.length > 0
+          ? enteredName
           : `Receiver ${receivers.length + 1}`;
 
       receivers.push({
-        id: crypto.randomUUID
-          ? crypto.randomUUID()
-          : `${Date.now()}-${Math.random()}`,
-        name: name,
+        id: createId(),
+        name: receiverName,
         lat: latitude,
         lon: normalizeLongitude(longitude)
       });
@@ -713,11 +681,12 @@
       renderReceiverTable();
       updateMap();
 
-      setStatus(`Added ${name}.`, "success");
+      setStatus(`Added ${receiverName}.`, "success");
     }
 
     function clearReceivers() {
       receivers = [];
+
       invalidateCalculation();
       renderReceiverTable();
       updateMap();
@@ -728,7 +697,7 @@
     function addExampleReceivers() {
       if (receivers.length > 0) {
         const confirmed = window.confirm(
-          "Add example receivers to the existing list?"
+          "Add example receivers to the existing receiver list?"
         );
 
         if (!confirmed) {
@@ -736,32 +705,33 @@
         }
       }
 
-      const examples = [
+      /*
+       * Deliberately placed around the International Date Line so the
+       * plotting correction can be tested immediately.
+       */
+      const exampleReceivers = [
         {
           name: "Receiver A",
-          lat: 33.2584,
-          lon: -119.5714
+          lat: 15.0,
+          lon: 179.0
         },
         {
           name: "Receiver B",
-          lat: 34.1500,
-          lon: -118.2500
+          lat: 16.0,
+          lon: -179.0
         },
         {
           name: "Receiver C",
-          lat: 32.8000,
-          lon: -117.1000
+          lat: 14.2,
+          lon: 178.2
         }
       ];
 
       const availableSlots = MAX_RECEIVERS - receivers.length;
-      const toAdd = examples.slice(0, availableSlots);
 
-      for (const receiver of toAdd) {
+      for (const receiver of exampleReceivers.slice(0, availableSlots)) {
         receivers.push({
-          id: crypto.randomUUID
-            ? crypto.randomUUID()
-            : `${Date.now()}-${Math.random()}`,
+          id: createId(),
           name: receiver.name,
           lat: receiver.lat,
           lon: receiver.lon
@@ -772,11 +742,16 @@
       renderReceiverTable();
       updateMap();
 
-      setStatus("Example receiver locations added.", "success");
+      setStatus(
+        "International Date Line example receivers added.",
+        "success"
+      );
     }
 
-    function removeReceiver(id) {
-      receivers = receivers.filter((receiver) => receiver.id !== id);
+    function removeReceiver(receiverId) {
+      receivers = receivers.filter(
+        (receiver) => receiver.id !== receiverId
+      );
 
       invalidateCalculation();
       renderReceiverTable();
@@ -807,8 +782,8 @@
               <td>
                 <button
                   class="remove-button"
-                  data-receiver-id="${receiver.id}"
                   type="button"
+                  data-receiver-id="${receiver.id}"
                 >
                   Remove
                 </button>
@@ -839,7 +814,7 @@
     }
 
     /*
-     * Main BOZ Calculation
+     * BOZ Calculation
      */
 
     function calculateBOZ() {
@@ -857,13 +832,9 @@
         return;
       }
 
+      calculateButton.disabled = true;
       setStatus("Calculating enclosing BOZ...");
-      document.getElementById("calculateButton").disabled = true;
 
-      /*
-       * Give the browser an opportunity to repaint the status message before
-       * calculation begins.
-       */
       setTimeout(() => {
         try {
           const result = calculateMinimumEnclosingBOZ(
@@ -901,45 +872,37 @@
             "error"
           );
         } finally {
-          document.getElementById("calculateButton").disabled = false;
+          calculateButton.disabled = false;
         }
       }, 30);
     }
 
     function getReceiverRadiusKm() {
-      const inputRadius = parseRequiredNumber(
+      const rawRadius = parseRequiredNumber(
         receiverRadiusInput.value,
         "Receiver BOZ radius"
       );
 
-      if (inputRadius === null) {
+      if (rawRadius === null) {
         return null;
       }
 
-      if (inputRadius <= 0) {
+      if (rawRadius <= 0) {
         setStatus("Receiver BOZ radius must be greater than zero.", "error");
         return null;
       }
 
       if (radiusUnitSelect.value === "NM") {
-        return inputRadius * NM_TO_KM;
+        return rawRadius * NM_TO_KM;
       }
 
-      return inputRadius;
+      return rawRadius;
     }
 
-    function calculateMinimumEnclosingBOZ(receiverList, receiverRadiusKm) {
-      /*
-       * A receiver BOZ is a geodesic disk centered on the receiver.
-       *
-       * If all receiver BOZs share radius r:
-       *
-       * enclosingRadius = r + max(distance(center, receiver_i))
-       *
-       * Therefore, optimize the maximum receiver-center distance,
-       * then add r.
-       */
-
+    function calculateMinimumEnclosingBOZ(
+      receiverList,
+      receiverRadiusKm
+    ) {
       if (receiverList.length === 1) {
         return {
           lat: receiverList[0].lat,
@@ -949,45 +912,39 @@
         };
       }
 
-      /*
-       * Generate good spherical seeds, then refine using WGS-84 Vincenty
-       * geodesic distances. This avoids a coarse latitude/longitude grid.
-       */
       const seeds = generateSphericalSeeds(receiverList);
 
-      let best = null;
+      let bestSolution = null;
 
       for (const seed of seeds) {
-        const refined = refineCenterWGS84(seed, receiverList);
+        const refinedCandidate = refineCenterWGS84(
+          seed,
+          receiverList
+        );
 
-        if (best === null || refined.maxDistanceKm < best.maxDistanceKm) {
-          best = refined;
+        if (
+          bestSolution === null ||
+          refinedCandidate.maxDistanceKm < bestSolution.maxDistanceKm
+        ) {
+          bestSolution = refinedCandidate;
         }
       }
 
-      if (!best || !Number.isFinite(best.maxDistanceKm)) {
+      if (
+        bestSolution === null ||
+        !Number.isFinite(bestSolution.maxDistanceKm)
+      ) {
         throw new Error("No valid enclosing BOZ solution was found.");
       }
 
       return {
-        lat: best.lat,
-        lon: best.lon,
-        centerRadiusKm: best.maxDistanceKm,
-        radiusKm: best.maxDistanceKm + receiverRadiusKm
+        lat: bestSolution.lat,
+        lon: bestSolution.lon,
+        centerRadiusKm: bestSolution.maxDistanceKm,
+        radiusKm: bestSolution.maxDistanceKm + receiverRadiusKm
       };
     }
 
-    /*
-     * Spherical Candidate Generation
-     *
-     * The minimum enclosing cap on a sphere is normally supported by:
-     *   - one point,
-     *   - two points, or
-     *   - three points.
-     *
-     * These candidates are used as initial seeds. The final result is then
-     * refined using WGS-84 Vincenty geodesic distances.
-     */
     function generateSphericalSeeds(receiverList) {
       const units = receiverList.map((receiver) =>
         unitVectorFromLatLon(receiver.lat, receiver.lon)
@@ -996,33 +953,30 @@
       const candidates = [];
 
       function addCandidate(vector) {
-        const normalized = normalizeVector(vector);
+        const normalizedVector = normalizeVector(vector);
 
-        if (normalized === null) {
+        if (normalizedVector === null) {
           return;
         }
 
-        const latLon = latLonFromUnitVector(normalized);
-        const score = maxAngularDistance(normalized, units);
+        const latLon = latLonFromUnitVector(normalizedVector);
 
-        if (Number.isFinite(score)) {
-          candidates.push({
-            lat: latLon.lat,
-            lon: latLon.lon,
-            score: score
-          });
-        }
+        candidates.push({
+          lat: latLon.lat,
+          lon: latLon.lon,
+          score: maxAngularDistance(normalizedVector, units)
+        });
       }
 
       /*
-       * Candidate 1: Receiver points themselves.
+       * Receiver locations themselves.
        */
       for (const unit of units) {
         addCandidate(unit);
       }
 
       /*
-       * Candidate 2: Great-circle midpoints of station pairs.
+       * Great-circle pair midpoints.
        */
       for (let i = 0; i < units.length - 1; i++) {
         for (let j = i + 1; j < units.length; j++) {
@@ -1031,24 +985,21 @@
           if (vectorMagnitude(midpoint) > 1e-12) {
             addCandidate(midpoint);
           } else {
-            /*
-             * Nearly antipodal case: select a perpendicular vector.
-             */
             addCandidate(perpendicularUnitVector(units[i]));
           }
         }
       }
 
       /*
-       * Candidate 3: Spherical circumcenters of station triples.
+       * Spherical circumcenters of point triples.
        */
       for (let i = 0; i < units.length - 2; i++) {
         for (let j = i + 1; j < units.length - 1; j++) {
           for (let k = j + 1; k < units.length; k++) {
-            const vectorAB = subtractVectors(units[j], units[i]);
-            const vectorAC = subtractVectors(units[k], units[i]);
+            const ab = subtractVectors(units[j], units[i]);
+            const ac = subtractVectors(units[k], units[i]);
 
-            const normal = crossProduct(vectorAB, vectorAC);
+            const normal = crossProduct(ab, ac);
 
             if (vectorMagnitude(normal) > 1e-12) {
               addCandidate(normal);
@@ -1059,8 +1010,8 @@
       }
 
       /*
-       * Vector-mean seed is helpful for clustered receiver sets,
-       * including receiver sets near the International Date Line.
+       * Geographic-vector mean is useful for clustered points and
+       * avoids averaging +179 and -179 to zero longitude.
        */
       const vectorSum = units.reduce(
         (sum, unit) => addVectors(sum, unit),
@@ -1072,23 +1023,23 @@
       candidates.sort((a, b) => a.score - b.score);
 
       /*
-       * Retain a small, diverse set of best seeds for WGS-84 refinement.
+       * Retain up to eight distinct candidate starting points.
        */
       const selected = [];
 
       for (const candidate of candidates) {
-        const duplicate = selected.some((existing) => {
-          const separation = haversineDistanceKm(
+        const isDuplicate = selected.some((existing) => {
+          const separationKm = haversineDistanceKm(
             candidate.lat,
             candidate.lon,
             existing.lat,
             existing.lon
           );
 
-          return separation < 0.001;
+          return separationKm < 0.001;
         });
 
-        if (!duplicate) {
+        if (!isDuplicate) {
           selected.push(candidate);
         }
 
@@ -1098,29 +1049,22 @@
       }
 
       if (selected.length === 0) {
-        throw new Error("Unable to generate initial BOZ center candidates.");
+        throw new Error("Unable to generate BOZ center candidates.");
       }
 
       return selected;
     }
 
-    /*
-     * WGS-84 Pattern-Search Refinement
-     *
-     * This performs a derivative-free minimax search:
-     *
-     * min(center) max(distance(center, receiver_i))
-     *
-     * It is initialized with spherical candidate centers and evaluates
-     * all objective distances using the WGS-84 Vincenty inverse method.
-     */
     function refineCenterWGS84(seed, receiverList) {
-      let current = {
+      let currentCenter = {
         lat: seed.lat,
         lon: seed.lon
       };
 
-      let currentScore = maxReceiverDistanceKm(current, receiverList);
+      let currentScore = maxReceiverDistanceKm(
+        currentCenter,
+        receiverList
+      );
 
       const maximumPairDistanceKm = maxPairDistance(receiverList);
 
@@ -1134,20 +1078,24 @@
         180, 225, 270, 315
       ];
 
-      let iteration = 0;
-      const maxIterations = 180;
-      const minStepKm = 0.0005;
+      const minimumStepKm = 0.0005;
+      const maximumIterations = 180;
 
-      while (stepKm > minStepKm && iteration < maxIterations) {
+      let iteration = 0;
+
+      while (
+        stepKm > minimumStepKm &&
+        iteration < maximumIterations
+      ) {
         iteration++;
 
-        let bestCandidate = current;
+        let bestCandidate = currentCenter;
         let bestScore = currentScore;
 
         for (const bearing of bearings) {
           const candidate = vincentyDirect(
-            current.lat,
-            current.lon,
+            currentCenter.lat,
+            currentCenter.lon,
             bearing,
             stepKm
           );
@@ -1164,7 +1112,7 @@
         }
 
         if (bestScore < currentScore - 1e-8) {
-          current = bestCandidate;
+          currentCenter = bestCandidate;
           currentScore = bestScore;
         } else {
           stepKm /= 2;
@@ -1172,8 +1120,8 @@
       }
 
       return {
-        lat: current.lat,
-        lon: current.lon,
+        lat: currentCenter.lat,
+        lon: currentCenter.lon,
         maxDistanceKm: currentScore
       };
     }
@@ -1193,7 +1141,10 @@
           return Number.POSITIVE_INFINITY;
         }
 
-        maximumDistanceKm = Math.max(maximumDistanceKm, distanceKm);
+        maximumDistanceKm = Math.max(
+          maximumDistanceKm,
+          distanceKm
+        );
       }
 
       return maximumDistanceKm;
@@ -1220,9 +1171,19 @@
     }
 
     /*
-     * Plotting
+     * Map Rendering
+     *
+     * International Date Line handling:
+     *
+     * 1. Use a common map longitude anchor.
+     * 2. Convert receiver, center, and circle coordinates to equivalent
+     *    unwrapped longitudes nearest that anchor.
+     * 3. Build Leaflet bounds from unwrapped points.
+     *
+     * Example:
+     *   +179 degrees and -179 degrees become +179 and +181 degrees,
+     *   producing a compact local map instead of a global map.
      */
-
     function updateMap() {
       receiverLayer.clearLayers();
       individualBOZLayer.clearLayers();
@@ -1232,47 +1193,64 @@
         return;
       }
 
+      const mapLongitudeAnchor = getMapLongitudeAnchor();
+
       const mapPoints = [];
 
+      /*
+       * Plot receiver location markers.
+       */
       for (const receiver of receivers) {
-        const marker = L.marker([receiver.lat, receiver.lon]).bindPopup(
-          `<strong>${escapeHtml(receiver.name)}</strong><br>` +
-          `Latitude: ${receiver.lat.toFixed(6)}<br>` +
-          `Longitude: ${receiver.lon.toFixed(6)}`
+        const displayLon = unwrapLongitudeNear(
+          receiver.lon,
+          mapLongitudeAnchor
         );
 
-        marker.addTo(receiverLayer);
-        mapPoints.push([receiver.lat, receiver.lon]);
-      }
+        L.marker([receiver.lat, displayLon])
+          .bindPopup(
+            `<strong>${escapeHtml(receiver.name)}</strong><br>` +
+            `Latitude: ${receiver.lat.toFixed(6)}<br>` +
+            `Longitude: ${receiver.lon.toFixed(6)}`
+          )
+          .addTo(receiverLayer);
 
-      const radiusKm = getRadiusKmForMapOnly();
+        mapPoints.push([receiver.lat, displayLon]);
+      }
 
       /*
        * Plot individual receiver BOZs.
        */
+      const receiverRadiusKm = getRadiusKmForMapOnly();
+
       if (
         showIndividualBOZsCheckbox.checked &&
-        radiusKm !== null &&
-        radiusKm > 0
+        receiverRadiusKm !== null &&
+        receiverRadiusKm > 0
       ) {
         for (const receiver of receivers) {
-          const ring = createGeodesicRing(
+          const rawRing = createGeodesicRing(
             receiver.lat,
             receiver.lon,
-            radiusKm,
+            receiverRadiusKm,
             96
           );
 
-          L.polygon(ring, {
+          const displayRing = unwrapRingLongitudes(
+            rawRing,
+            mapLongitudeAnchor
+          );
+
+          L.polygon(displayRing, {
             color: "#b42318",
             weight: 1,
             opacity: 0.8,
             fillColor: "#ef4444",
             fillOpacity: 0.07,
-            dashArray: "5, 5"
+            dashArray: "5, 5",
+            noClip: true
           }).addTo(individualBOZLayer);
 
-          mapPoints.push(...ring);
+          mapPoints.push(...displayRing);
         }
       }
 
@@ -1280,22 +1258,33 @@
        * Plot calculated enclosing BOZ.
        */
       if (calculatedBOZ !== null) {
-        const ring = createGeodesicRing(
+        const rawRing = createGeodesicRing(
           calculatedBOZ.lat,
           calculatedBOZ.lon,
           calculatedBOZ.radiusKm,
           160
         );
 
-        L.polygon(ring, {
+        const displayRing = unwrapRingLongitudes(
+          rawRing,
+          mapLongitudeAnchor
+        );
+
+        const displayCenterLon = unwrapLongitudeNear(
+          calculatedBOZ.lon,
+          mapLongitudeAnchor
+        );
+
+        L.polygon(displayRing, {
           color: "#1d4ed8",
           weight: 3,
           opacity: 0.95,
           fillColor: "#3b82f6",
-          fillOpacity: 0.14
+          fillOpacity: 0.14,
+          noClip: true
         }).addTo(calculatedBOZLayer);
 
-        L.marker([calculatedBOZ.lat, calculatedBOZ.lon], {
+        L.marker([calculatedBOZ.lat, displayCenterLon], {
           icon: L.divIcon({
             className: "custom-center-marker",
             html: `
@@ -1320,10 +1309,13 @@
           )
           .addTo(calculatedBOZLayer);
 
-        mapPoints.push(...ring);
-        mapPoints.push([calculatedBOZ.lat, calculatedBOZ.lon]);
+        mapPoints.push(...displayRing);
+        mapPoints.push([calculatedBOZ.lat, displayCenterLon]);
       }
 
+      /*
+       * Fit map bounds using unwrapped coordinates.
+       */
       if (mapPoints.length > 0) {
         const bounds = L.latLngBounds(mapPoints);
 
@@ -1341,29 +1333,135 @@
         return;
       }
 
-      const ring = createGeodesicRing(
+      const mapLongitudeAnchor = calculatedBOZ.lon;
+
+      const rawRing = createGeodesicRing(
         calculatedBOZ.lat,
         calculatedBOZ.lon,
         calculatedBOZ.radiusKm,
         160
       );
 
-      map.fitBounds(L.latLngBounds(ring), {
-        padding: [35, 35],
-        maxZoom: 8
-      });
+      const displayRing = unwrapRingLongitudes(
+        rawRing,
+        mapLongitudeAnchor
+      );
+
+      const bounds = L.latLngBounds(displayRing);
+
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, {
+          padding: [35, 35],
+          maxZoom: 8
+        });
+      }
     }
 
     function getRadiusKmForMapOnly() {
-      const rawValue = Number(receiverRadiusInput.value);
+      const rawRadius = Number(receiverRadiusInput.value);
 
-      if (!Number.isFinite(rawValue) || rawValue <= 0) {
+      if (!Number.isFinite(rawRadius) || rawRadius <= 0) {
         return null;
       }
 
       return radiusUnitSelect.value === "NM"
-        ? rawValue * NM_TO_KM
-        : rawValue;
+        ? rawRadius * NM_TO_KM
+        : rawRadius;
+    }
+
+    /*
+     * International Date Line Display Helpers
+     */
+
+    function getMapLongitudeAnchor() {
+      /*
+       * When available, the calculated center is the best visual anchor.
+       */
+      if (calculatedBOZ !== null) {
+        return calculatedBOZ.lon;
+      }
+
+      if (receivers.length === 0) {
+        return 0;
+      }
+
+      /*
+       * Circular longitude mean avoids this bad result:
+       *
+       * average(+179, -179) = 0
+       *
+       * Instead, it correctly produces approximately +/-180.
+       */
+      let x = 0;
+      let y = 0;
+
+      for (const receiver of receivers) {
+        const lonRad = toRadians(receiver.lon);
+
+        x += Math.cos(lonRad);
+        y += Math.sin(lonRad);
+      }
+
+      if (Math.abs(x) < 1e-12 && Math.abs(y) < 1e-12) {
+        return receivers[0].lon;
+      }
+
+      return normalizeLongitude(toDegrees(Math.atan2(y, x)));
+    }
+
+    function unwrapLongitudeNear(longitude, referenceLongitude) {
+      /*
+       * Returns an equivalent longitude nearest referenceLongitude.
+       *
+       * Example:
+       *   unwrapLongitudeNear(-179, 179) returns 181.
+       */
+      const normalizedLongitude = normalizeLongitude(longitude);
+
+      return normalizedLongitude +
+        360 * Math.round(
+          (referenceLongitude - normalizedLongitude) / 360
+        );
+    }
+
+    function unwrapRingLongitudes(ring, anchorLongitude) {
+      /*
+       * Converts a normalized geographic ring into one continuous
+       * longitude sequence suitable for Leaflet polygons.
+       */
+      if (!Array.isArray(ring) || ring.length === 0) {
+        return [];
+      }
+
+      const unwrappedRing = [];
+
+      let previousLon = unwrapLongitudeNear(
+        ring[0][1],
+        anchorLongitude
+      );
+
+      unwrappedRing.push([
+        ring[0][0],
+        previousLon
+      ]);
+
+      for (let i = 1; i < ring.length; i++) {
+        const latitude = ring[i][0];
+
+        const longitude = unwrapLongitudeNear(
+          ring[i][1],
+          previousLon
+        );
+
+        unwrappedRing.push([
+          latitude,
+          longitude
+        ]);
+
+        previousLon = longitude;
+      }
+
+      return unwrappedRing;
     }
 
     /*
@@ -1375,12 +1473,9 @@
         return;
       }
 
-      /*
-       * Google Maps URL:
-       * Opens the calculated center coordinate in the Google Maps app,
-       * where available, or in a browser otherwise.
-       */
-      const coordinate = `${calculatedBOZ.lat.toFixed(6)},${calculatedBOZ.lon.toFixed(6)}`;
+      const coordinate =
+        `${calculatedBOZ.lat.toFixed(6)},` +
+        `${calculatedBOZ.lon.toFixed(6)}`;
 
       const googleMapsUrl =
         "https://www.google.com/maps/search/?api=1&query=" +
@@ -1390,11 +1485,15 @@
     }
 
     /*
-     * Geographic Circle Construction
-     *
-     * Uses Vincenty direct geodesic calculations to draw a ring on the map.
+     * Geodesic Ring Generation
      */
-    function createGeodesicRing(centerLat, centerLon, radiusKm, pointCount) {
+
+    function createGeodesicRing(
+      centerLat,
+      centerLon,
+      radiusKm,
+      pointCount
+    ) {
       const ring = [];
 
       for (let i = 0; i <= pointCount; i++) {
@@ -1407,6 +1506,10 @@
           radiusKm
         );
 
+        /*
+         * Keep calculation longitudes normalized. The map display
+         * subsequently unwraps them using unwrapRingLongitudes().
+         */
         ring.push([point.lat, point.lon]);
       }
 
@@ -1416,13 +1519,15 @@
     /*
      * WGS-84 Vincenty Inverse Formula
      *
-     * Returns distance in kilometers.
+     * Returns geodesic distance in kilometers.
      */
     function vincentyInverse(lat1, lon1, lat2, lon2) {
       const phi1 = toRadians(lat1);
       const phi2 = toRadians(lat2);
 
-      const L = toRadians(normalizeLongitude(lon2 - lon1));
+      const L = toRadians(
+        normalizeLongitude(lon2 - lon1)
+      );
 
       const U1 = Math.atan((1 - WGS84.f) * Math.tan(phi1));
       const U2 = Math.atan((1 - WGS84.f) * Math.tan(phi2));
@@ -1450,7 +1555,8 @@
         sinSigma = Math.sqrt(
           Math.pow(cosU2 * sinLambda, 2) +
           Math.pow(
-            cosU1 * sinU2 - sinU1 * cosU2 * cosLambda,
+            cosU1 * sinU2 -
+            sinU1 * cosU2 * cosLambda,
             2
           )
         );
@@ -1509,15 +1615,17 @@
       );
 
       /*
-       * Vincenty can fail to converge for near-antipodal pairs.
-       * Use a spherical fallback so the app returns a result.
+       * Fallback for difficult near-antipodal cases.
        */
       if (iteration >= 200) {
         return haversineDistanceKm(lat1, lon1, lat2, lon2);
       }
 
       const uSquared =
-        (cosSquaredAlpha * (WGS84.a * WGS84.a - WGS84.b * WGS84.b)) /
+        (
+          cosSquaredAlpha *
+          (WGS84.a * WGS84.a - WGS84.b * WGS84.b)
+        ) /
         (WGS84.b * WGS84.b);
 
       const A =
@@ -1572,24 +1680,40 @@
     /*
      * WGS-84 Vincenty Direct Formula
      *
-     * Given start point, bearing, and distance, returns destination point.
+     * Returns the destination coordinate after traveling distanceKm
+     * from the start point at initialBearingDeg.
      */
-    function vincentyDirect(lat1, lon1, initialBearingDeg, distanceKm) {
+    function vincentyDirect(
+      lat1,
+      lon1,
+      initialBearingDeg,
+      distanceKm
+    ) {
       const alpha1 = toRadians(initialBearingDeg);
+
       const sinAlpha1 = Math.sin(alpha1);
       const cosAlpha1 = Math.cos(alpha1);
 
       const phi1 = toRadians(lat1);
-      const tanU1 = (1 - WGS84.f) * Math.tan(phi1);
-      const cosU1 = 1 / Math.sqrt(1 + tanU1 * tanU1);
+
+      const tanU1 =
+        (1 - WGS84.f) * Math.tan(phi1);
+
+      const cosU1 =
+        1 / Math.sqrt(1 + tanU1 * tanU1);
+
       const sinU1 = tanU1 * cosU1;
 
       const sigma1 = Math.atan2(tanU1, cosAlpha1);
+
       const sinAlpha = cosU1 * sinAlpha1;
       const cosSquaredAlpha = 1 - sinAlpha * sinAlpha;
 
       const uSquared =
-        (cosSquaredAlpha * (WGS84.a * WGS84.a - WGS84.b * WGS84.b)) /
+        (
+          cosSquaredAlpha *
+          (WGS84.a * WGS84.a - WGS84.b * WGS84.b)
+        ) /
         (WGS84.b * WGS84.b);
 
       const A =
@@ -1648,7 +1772,9 @@
           );
 
         sigmaPrevious = sigma;
-        sigma = (distanceKm * 1000) / (WGS84.b * A) + deltaSigma;
+        sigma =
+          (distanceKm * 1000) / (WGS84.b * A) +
+          deltaSigma;
 
         iteration++;
       } while (
@@ -1698,16 +1824,16 @@
           )
         );
 
-      const lon2 = toDegrees(toRadians(lon1) + L);
-
       return {
         lat: toDegrees(phi2),
-        lon: normalizeLongitude(lon2)
+        lon: normalizeLongitude(
+          toDegrees(toRadians(lon1) + L)
+        )
       };
     }
 
     /*
-     * Spherical / Vector Helpers
+     * Spherical Vector Helpers
      */
 
     function unitVectorFromLatLon(lat, lon) {
@@ -1722,34 +1848,47 @@
     }
 
     function latLonFromUnitVector(vector) {
-      const normalized = normalizeVector(vector);
+      const normalizedVector = normalizeVector(vector);
 
-      if (normalized === null) {
+      if (normalizedVector === null) {
         throw new Error("Invalid unit vector.");
       }
 
       return {
         lat: toDegrees(
           Math.atan2(
-            normalized[2],
-            Math.hypot(normalized[0], normalized[1])
+            normalizedVector[2],
+            Math.hypot(
+              normalizedVector[0],
+              normalizedVector[1]
+            )
           )
         ),
         lon: normalizeLongitude(
-          toDegrees(Math.atan2(normalized[1], normalized[0]))
+          toDegrees(
+            Math.atan2(
+              normalizedVector[1],
+              normalizedVector[0]
+            )
+          )
         )
       };
     }
 
     function maxAngularDistance(centerVector, unitVectors) {
-      let maximumAngle = 0;
+      let maxAngle = 0;
 
       for (const point of unitVectors) {
-        const dot = clamp(dotProduct(centerVector, point), -1, 1);
-        maximumAngle = Math.max(maximumAngle, Math.acos(dot));
+        const dot = clamp(
+          dotProduct(centerVector, point),
+          -1,
+          1
+        );
+
+        maxAngle = Math.max(maxAngle, Math.acos(dot));
       }
 
-      return maximumAngle;
+      return maxAngle;
     }
 
     function perpendicularUnitVector(vector) {
@@ -1758,7 +1897,9 @@
           ? [1, 0, 0]
           : [0, 1, 0];
 
-      return normalizeVector(crossProduct(vector, reference));
+      return normalizeVector(
+        crossProduct(vector, reference)
+      );
     }
 
     function addVectors(a, b) {
@@ -1794,7 +1935,11 @@
     }
 
     function dotProduct(a, b) {
-      return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+      return (
+        a[0] * b[0] +
+        a[1] * b[1] +
+        a[2] * b[2]
+      );
     }
 
     function vectorMagnitude(vector) {
@@ -1802,6 +1947,10 @@
     }
 
     function normalizeVector(vector) {
+      if (vector === null) {
+        return null;
+      }
+
       const magnitude = vectorMagnitude(vector);
 
       if (!Number.isFinite(magnitude) || magnitude < 1e-15) {
@@ -1824,24 +1973,30 @@
       const phi2 = toRadians(lat2);
 
       const deltaPhi = toRadians(lat2 - lat1);
+
       const deltaLambda = toRadians(
         normalizeLongitude(lon2 - lon1)
       );
 
       const a =
-        Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+        Math.sin(deltaPhi / 2) *
+        Math.sin(deltaPhi / 2) +
         Math.cos(phi1) *
         Math.cos(phi2) *
         Math.sin(deltaLambda / 2) *
         Math.sin(deltaLambda / 2);
 
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const c =
+        2 * Math.atan2(
+          Math.sqrt(a),
+          Math.sqrt(1 - a)
+        );
 
       return MEAN_EARTH_RADIUS_KM * c;
     }
 
-    function normalizeLongitude(lon) {
-      return ((lon + 540) % 360) - 180;
+    function normalizeLongitude(longitude) {
+      return ((longitude + 540) % 360) - 180;
     }
 
     function toRadians(degrees) {
@@ -1852,19 +2007,19 @@
       return radians * 180 / Math.PI;
     }
 
-    function clamp(value, min, max) {
-      return Math.max(min, Math.min(max, value));
+    function clamp(value, minimum, maximum) {
+      return Math.max(minimum, Math.min(maximum, value));
     }
 
     function parseRequiredNumber(rawValue, fieldName) {
-      const valueText = String(rawValue).trim();
+      const text = String(rawValue).trim();
 
-      if (valueText === "") {
+      if (text === "") {
         setStatus(`${fieldName} is required.`, "error");
         return null;
       }
 
-      const value = Number(valueText);
+      const value = Number(text);
 
       if (!Number.isFinite(value)) {
         setStatus(`${fieldName} must be a valid number.`, "error");
@@ -1872,6 +2027,17 @@
       }
 
       return value;
+    }
+
+    function createId() {
+      if (
+        window.crypto &&
+        typeof window.crypto.randomUUID === "function"
+      ) {
+        return window.crypto.randomUUID();
+      }
+
+      return `${Date.now()}-${Math.random()}`;
     }
 
     function setStatus(message, type = "") {
