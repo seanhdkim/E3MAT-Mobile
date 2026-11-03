@@ -613,7 +613,7 @@
         const MAX_HEADING_SPREAD_DEG = 15;
 
         const MIN_BASELINE_METERS = 10;
-        const MIN_INTERSECTION_ANGLE_DEG = 15;
+        const MIN_INTERSECTION_ANGLE_DEG = 10;
         const GOOD_INTERSECTION_ANGLE_DEG = 30;
 
         const OUTLIER_MIN_THRESHOLD_DEG = 12;
@@ -1460,9 +1460,14 @@
 
             const baseline = Math.hypot(dx, dy);
 
+            /*
+            * Require station separation at least equal to the combined reported
+            * GPS uncertainty. The estimate-quality logic will still flag weak
+            * geometry, low crossing angles, and inconsistent bearings.
+            */
             const requiredBaseline = Math.max(
                 MIN_BASELINE_METERS,
-                2 * Math.hypot(a.gpsAccuracy, b.gpsAccuracy)
+                Math.hypot(a.gpsAccuracy, b.gpsAccuracy)
             );
 
             if (baseline < requiredBaseline) {
