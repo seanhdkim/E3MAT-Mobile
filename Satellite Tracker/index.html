@@ -1,0 +1,1981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>Satellite Tracker and Pass Predictor</title>
+
+  <!-- Leaflet -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #121d2e;
+      --panel-2: #18263b;
+      --border: #2d405d;
+      --text: #e8eff9;
+      --muted: #aebed3;
+      --accent: #48a9ff;
+      --accent-2: #24d19b;
+      --warning: #ffc857;
+      --danger: #ff6b6b;
+      --input: #0d1726;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: #0d1726;
+    }
+
+    header h1 {
+      margin: 0 0 5px;
+      font-size: 20px;
+    }
+
+    header p {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    #app {
+      display: grid;
+      grid-template-columns: 390px 1fr;
+      min-height: calc(100vh - 72px);
+    }
+
+    #sidebar {
+      overflow-y: auto;
+      padding: 14px;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+    }
+
+    #map {
+      width: 100%;
+      min-height: calc(100vh - 72px);
+      background: #18263b;
+    }
+
+    .card {
+      margin-bottom: 14px;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel-2);
+    }
+
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 15px;
+    }
+
+    .help {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    label {
+      display: block;
+      margin: 9px 0 4px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    input,
+    select,
+    button {
+      width: 100%;
+      min-height: 35px;
+      padding: 7px 9px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text);
+      background: var(--input);
+      font: inherit;
+    }
+
+    input:focus,
+    select:focus {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+
+    button {
+      cursor: pointer;
+      border-color: #2c78b8;
+      background: #176aa7;
+      font-weight: 700;
+    }
+
+    button:hover:not(:disabled) {
+      background: #2380c4;
+    }
+
+    button.secondary {
+      border-color: var(--border);
+      background: #223652;
+    }
+
+    button.secondary:hover:not(:disabled) {
+      background: #2c4669;
+    }
+
+    button.success {
+      border-color: #258f6f;
+      background: #177756;
+    }
+
+    button.success:hover:not(:disabled) {
+      background: #1d9068;
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.65;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .row > * {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .row.tight > * {
+      flex: initial;
+    }
+
+    .status {
+      min-height: 18px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .status.error {
+      color: var(--danger);
+    }
+
+    .status.success {
+      color: var(--accent-2);
+    }
+
+    .status.warning {
+      color: var(--warning);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .metric {
+      padding: 8px;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: rgba(0, 0, 0, 0.14);
+    }
+
+    .metric .label {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .metric .value {
+      display: block;
+      overflow-wrap: anywhere;
+      margin-top: 3px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .pass-table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 600px;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th,
+    td {
+      padding: 7px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .pass-visible {
+      color: var(--accent-2);
+      font-weight: 700;
+    }
+
+    .leaflet-container {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .satellite-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px !important;
+      height: 28px !important;
+      border: 2px solid white;
+      border-radius: 50%;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.55);
+      color: white;
+      background: #176aa7;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .observer-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px !important;
+      height: 22px !important;
+      border: 2px solid white;
+      border-radius: 50%;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.55);
+      color: white;
+      background: #177756;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .legend {
+      padding: 7px 9px;
+      border: 1px solid rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      color: #172232;
+      background: rgba(255, 255, 255, 0.92);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .legend-line {
+      display: inline-block;
+      width: 23px;
+      height: 0;
+      margin-right: 5px;
+      border-top: 3px solid #1677ff;
+      vertical-align: middle;
+    }
+
+    .legend-line.future {
+      border-top-color: #d91e18;
+      border-top-style: dashed;
+    }
+
+    .legend-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin: 0 7px 0 4px;
+      border-radius: 50%;
+      vertical-align: middle;
+    }
+
+    .legend-dot.sat {
+      background: #176aa7;
+    }
+
+    .legend-dot.obs {
+      background: #177756;
+    }
+
+    @media (max-width: 900px) {
+      #app {
+        display: flex;
+        flex-direction: column;
+      }
+
+      #sidebar {
+        max-height: none;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      #map {
+        min-height: 62vh;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Satellite Tracker and Observer Pass Predictor</h1>
+    <p>
+      CelesTrak GP data · SGP4 propagation · Leaflet/OpenStreetMap display · UTC pass predictions
+    </p>
+  </header>
+
+  <main id="app">
+    <aside id="sidebar">
+      <section class="card">
+        <h2>1. Satellite Data</h2>
+
+        <label for="groupSelect">CelesTrak Group</label>
+        <div class="row">
+          <select id="groupSelect">
+            <option value="stations">Space Stations</option>
+            <option value="visual">Brightest / Visual Satellites</option>
+            <option value="weather">Weather Satellites</option>
+            <option value="resource">Earth Resources</option>
+            <option value="sarsat">Search and Rescue (SARSAT)</option>
+            <option value="gps-ops">GPS Operational</option>
+            <option value="galileo">Galileo</option>
+            <option value="active">Active Satellites</option>
+            <option value="starlink">Starlink</option>
+            <option value="oneweb">OneWeb</option>
+            <option value="amateur">Amateur Radio</option>
+            <option value="cubesat">CubeSats</option>
+          </select>
+          <button id="loadGroupButton" type="button">Load</button>
+        </div>
+
+        <label for="searchInput">Search Loaded Group</label>
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Name, NORAD catalog ID, or international ID"
+          autocomplete="off"
+        />
+
+        <label for="satelliteSelect">Matching Objects</label>
+        <select id="satelliteSelect" size="7"></select>
+
+        <div class="row">
+          <button id="selectSatelliteButton" type="button">
+            Track Selected
+          </button>
+          <button id="refreshSatelliteButton" type="button" class="secondary">
+            Refresh
+          </button>
+        </div>
+
+        <label for="catalogInput">Load Directly by NORAD Catalog ID</label>
+        <div class="row">
+          <input
+            id="catalogInput"
+            type="text"
+            inputmode="numeric"
+            placeholder="Example: 25544"
+          />
+          <button id="loadCatalogButton" type="button">Load ID</button>
+        </div>
+
+        <p class="help">
+          Group search works against the objects already downloaded for the selected
+          group. “Load ID” retrieves one current GP JSON record from CelesTrak.
+        </p>
+
+        <div id="dataStatus" class="status">Loading initial Space Stations data…</div>
+      </section>
+
+      <section class="card">
+        <h2>2. Observer Location</h2>
+
+        <div class="grid-2">
+          <div>
+            <label for="observerLat">Latitude (degrees)</label>
+            <input
+              id="observerLat"
+              type="number"
+              min="-90"
+              max="90"
+              step="0.000001"
+              value="38.889500"
+            />
+          </div>
+          <div>
+            <label for="observerLon">Longitude (degrees)</label>
+            <input
+              id="observerLon"
+              type="number"
+              min="-180"
+              max="180"
+              step="0.000001"
+              value="-77.035300"
+            />
+          </div>
+        </div>
+
+        <label for="observerHeight">Observer Height Above Mean Sea Level (meters)</label>
+        <input
+          id="observerHeight"
+          type="number"
+          min="-500"
+          max="10000"
+          step="1"
+          value="0"
+        />
+
+        <label for="minimumElevation">Minimum Elevation for Visibility (degrees)</label>
+        <input
+          id="minimumElevation"
+          type="number"
+          min="-10"
+          max="90"
+          step="0.1"
+          value="10"
+        />
+
+        <div class="row" style="margin-top: 10px;">
+          <button id="updateObserverButton" type="button" class="success">
+            Update Observer
+          </button>
+          <button id="deviceLocationButton" type="button" class="secondary">
+            Use Device Location
+          </button>
+        </div>
+
+        <p class="help">
+          You may also click the map to set the observer latitude and longitude.
+          The minimum-elevation value acts as the visibility or field-of-view
+          threshold for pass prediction.
+        </p>
+
+        <div id="observerStatus" class="status"></div>
+      </section>
+
+      <section class="card">
+        <h2>3. Current Satellite State</h2>
+
+        <div class="metric-grid">
+          <div class="metric">
+            <span class="label">Object</span>
+            <span class="value" id="stateName">None selected</span>
+          </div>
+          <div class="metric">
+            <span class="label">NORAD Catalog ID</span>
+            <span class="value" id="stateCatalog">—</span>
+          </div>
+          <div class="metric">
+            <span class="label">Element Epoch</span>
+            <span class="value" id="stateEpoch">—</span>
+          </div>
+          <div class="metric">
+            <span class="label">Current UTC</span>
+            <span class="value" id="stateTime">—</span>
+          </div>
+          <div class="metric">
+            <span class="label">Sub-Satellite Position</span>
+            <span class="value" id="statePosition">—</span>
+          </div>
+          <div class="metric">
+            <span class="label">Altitude</span>
+            <span class="value" id="stateAltitude">—</span>
+          </div>
+          <div class="metric">
+            <span class="label">Observer Azimuth</span>
+            <span class="value" id="stateAzimuth">—</span>
+          </div>
+          <div class="metric">
+            <span class="label">Observer Elevation</span>
+            <span class="value" id="stateElevation">—</span>
+          </div>
+          <div class="metric">
+            <span class="label">Observer Range</span>
+            <span class="value" id="stateRange">—</span>
+          </div>
+          <div class="metric">
+            <span class="label">Visibility</span>
+            <span class="value" id="stateVisibility">—</span>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top: 10px;">
+          <button id="centerSatelliteButton" type="button" class="secondary">
+            Center Satellite
+          </button>
+          <button id="fitTrackButton" type="button" class="secondary">
+            Fit Ground Track
+          </button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>4. Next 24 Hours of Passes</h2>
+
+        <button id="predictPassesButton" type="button">
+          Calculate Passes
+        </button>
+
+        <div id="passStatus" class="status">
+          Select a satellite, then calculate observer passes.
+        </div>
+
+        <div class="pass-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Start UTC</th>
+                <th>End UTC</th>
+                <th>Duration</th>
+                <th>Max Elev.</th>
+                <th>Rise Az.</th>
+                <th>Set Az.</th>
+              </tr>
+            </thead>
+            <tbody id="passTableBody">
+              <tr>
+                <td colspan="6">No pass calculation has been run.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Notes</h2>
+        <p class="help">
+          Ground tracks use the current GP element set and an SGP4 propagation model.
+          Predictions are planning and visualization aids; accuracy depends on the
+          freshness and quality of the orbital elements, object maneuvers, and local
+          horizon/terrain conditions.
+        </p>
+        <p class="help">
+          This prototype uses the public OpenStreetMap standard tile service. For
+          sustained, high-volume, operational, or commercial use, use a tile provider
+          or self-hosted tile infrastructure that meets your organization’s requirements.
+        </p>
+      </section>
+    </aside>
+
+    <div id="map" aria-label="Satellite ground track map"></div>
+  </main>
+
+  <!-- Leaflet -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <!-- satellite.js v5 includes global `satellite` and OMM/JSON support -->
+  <script src="https://cdn.jsdelivr.net/npm/satellite.js@5.0.0/dist/satellite.min.js"></script>
+
+  <script>
+    "use strict";
+
+    /*
+      Satellite Tracker and Pass Predictor
+      -----------------------------------
+      Data source:
+        CelesTrak GP JSON:
+        https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=json
+
+      Main application assumptions:
+        - Coordinates displayed as WGS-84 geodetic latitude/longitude.
+        - Observer height is kilometers internally for satellite.js.
+        - All pass prediction output is UTC.
+        - Minimum elevation is the primary "field-of-view" visibility threshold.
+    */
+
+    const CELESTRAK_BASE_URL =
+      "https://celestrak.org/NORAD/elements/gp.php";
+
+    const DEFAULT_GROUP = "stations";
+    const TRACK_REFRESH_MS = 30000;
+    const LIVE_UPDATE_MS = 1000;
+    const PASS_SEARCH_HOURS = 24;
+    const PASS_SCAN_STEP_SECONDS = 30;
+    const EARTH_RADIUS_KM = 6378.137;
+
+    const appState = {
+      groupName: DEFAULT_GROUP,
+      groupRecords: [],
+      filteredRecords: [],
+      selectedRecord: null,
+      satrec: null,
+      observer: null,
+      map: null,
+      satelliteMarker: null,
+      observerMarker: null,
+      observerCircle: null,
+      pastTrackLayers: [],
+      futureTrackLayers: [],
+      lastTrackUpdateMs: 0,
+      lastCurrentState: null,
+      isCalculatingPasses: false
+    };
+
+    const elements = {
+      groupSelect: document.getElementById("groupSelect"),
+      loadGroupButton: document.getElementById("loadGroupButton"),
+      searchInput: document.getElementById("searchInput"),
+      satelliteSelect: document.getElementById("satelliteSelect"),
+      selectSatelliteButton: document.getElementById("selectSatelliteButton"),
+      refreshSatelliteButton: document.getElementById("refreshSatelliteButton"),
+      catalogInput: document.getElementById("catalogInput"),
+      loadCatalogButton: document.getElementById("loadCatalogButton"),
+      dataStatus: document.getElementById("dataStatus"),
+
+      observerLat: document.getElementById("observerLat"),
+      observerLon: document.getElementById("observerLon"),
+      observerHeight: document.getElementById("observerHeight"),
+      minimumElevation: document.getElementById("minimumElevation"),
+      updateObserverButton: document.getElementById("updateObserverButton"),
+      deviceLocationButton: document.getElementById("deviceLocationButton"),
+      observerStatus: document.getElementById("observerStatus"),
+
+      stateName: document.getElementById("stateName"),
+      stateCatalog: document.getElementById("stateCatalog"),
+      stateEpoch: document.getElementById("stateEpoch"),
+      stateTime: document.getElementById("stateTime"),
+      statePosition: document.getElementById("statePosition"),
+      stateAltitude: document.getElementById("stateAltitude"),
+      stateAzimuth: document.getElementById("stateAzimuth"),
+      stateElevation: document.getElementById("stateElevation"),
+      stateRange: document.getElementById("stateRange"),
+      stateVisibility: document.getElementById("stateVisibility"),
+
+      centerSatelliteButton: document.getElementById("centerSatelliteButton"),
+      fitTrackButton: document.getElementById("fitTrackButton"),
+
+      predictPassesButton: document.getElementById("predictPassesButton"),
+      passStatus: document.getElementById("passStatus"),
+      passTableBody: document.getElementById("passTableBody")
+    };
+
+    function initializeMap() {
+      appState.map = L.map("map", {
+        worldCopyJump: true,
+        zoomControl: true
+      }).setView([20, 0], 2);
+
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+      }).addTo(appState.map);
+
+      appState.map.on("click", (event) => {
+        elements.observerLat.value = event.latlng.lat.toFixed(6);
+        elements.observerLon.value = event.latlng.lng.toFixed(6);
+        updateObserverFromInputs(true);
+        setStatus(
+          elements.observerStatus,
+          "Observer location updated from map click.",
+          "success"
+        );
+      });
+
+      const legend = L.control({ position: "bottomright" });
+      legend.onAdd = () => {
+        const div = L.DomUtil.create("div", "legend");
+        div.innerHTML = `
+          <div><span class="legend-dot sat"></span>Satellite current location</div>
+          <div><span class="legend-dot obs"></span>Observer location</div>
+          <div><span class="legend-line"></span>Past ground track</div>
+          <div><span class="legend-line future"></span>Future ground track</div>
+        `;
+        return div;
+      };
+      legend.addTo(appState.map);
+    }
+
+    function initializeEventHandlers() {
+      elements.loadGroupButton.addEventListener("click", () => {
+        loadGroup(elements.groupSelect.value);
+      });
+
+      elements.searchInput.addEventListener("input", () => {
+        renderSatelliteOptions();
+      });
+
+      elements.satelliteSelect.addEventListener("dblclick", () => {
+        trackSelectedSatelliteFromList();
+      });
+
+      elements.selectSatelliteButton.addEventListener("click", () => {
+        trackSelectedSatelliteFromList();
+      });
+
+      elements.refreshSatelliteButton.addEventListener("click", () => {
+        refreshCurrentSatellite();
+      });
+
+      elements.loadCatalogButton.addEventListener("click", () => {
+        loadSatelliteByCatalogId();
+      });
+
+      elements.catalogInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          loadSatelliteByCatalogId();
+        }
+      });
+
+      elements.updateObserverButton.addEventListener("click", () => {
+        updateObserverFromInputs(true);
+      });
+
+      elements.deviceLocationButton.addEventListener("click", () => {
+        useDeviceLocation();
+      });
+
+      elements.centerSatelliteButton.addEventListener("click", () => {
+        if (appState.lastCurrentState) {
+          appState.map.setView(
+            [
+              appState.lastCurrentState.latitudeDeg,
+              appState.lastCurrentState.longitudeDeg
+            ],
+            Math.max(appState.map.getZoom(), 4)
+          );
+        }
+      });
+
+      elements.fitTrackButton.addEventListener("click", () => {
+        fitMapToGroundTrack();
+      });
+
+      elements.predictPassesButton.addEventListener("click", () => {
+        predictPasses();
+      });
+    }
+
+    async function initializeApplication() {
+      initializeMap();
+      initializeEventHandlers();
+      updateObserverFromInputs(false);
+      await loadGroup(DEFAULT_GROUP);
+
+      window.setInterval(() => {
+        updateLiveDisplay(false);
+      }, LIVE_UPDATE_MS);
+    }
+
+    async function loadGroup(groupName) {
+      setLoading(elements.loadGroupButton, true);
+      appState.groupName = groupName;
+
+      setStatus(
+        elements.dataStatus,
+        `Loading CelesTrak GP JSON for group "${groupName}"…`
+      );
+
+      try {
+        const url =
+          `${CELESTRAK_BASE_URL}?GROUP=${encodeURIComponent(groupName)}&FORMAT=json`;
+
+        const records = await fetchJson(url);
+
+        if (!Array.isArray(records) || records.length === 0) {
+          throw new Error("CelesTrak returned no records for the selected group.");
+        }
+
+        appState.groupRecords = sortRecords(records);
+        elements.searchInput.value = "";
+        renderSatelliteOptions();
+
+        setStatus(
+          elements.dataStatus,
+          `Loaded ${appState.groupRecords.length.toLocaleString()} object(s) from CelesTrak group "${groupName}".`,
+          "success"
+        );
+
+        if (!appState.selectedRecord && appState.groupRecords.length > 0) {
+          elements.satelliteSelect.selectedIndex = 0;
+          selectRecord(appState.groupRecords[0]);
+        }
+      } catch (error) {
+        console.error(error);
+        setStatus(
+          elements.dataStatus,
+          `Could not load CelesTrak data: ${error.message}`,
+          "error"
+        );
+      } finally {
+        setLoading(elements.loadGroupButton, false);
+      }
+    }
+
+    async function loadSatelliteByCatalogId() {
+      const catalogId = elements.catalogInput.value.trim();
+
+      if (!/^\d{1,8}$/.test(catalogId)) {
+        setStatus(
+          elements.dataStatus,
+          "Enter a numeric NORAD catalog ID, such as 25544.",
+          "warning"
+        );
+        return;
+      }
+
+      setLoading(elements.loadCatalogButton, true);
+      setStatus(
+        elements.dataStatus,
+        `Loading current GP JSON for catalog ID ${catalogId}…`
+      );
+
+      try {
+        const record = await fetchCurrentRecordByCatalogId(catalogId);
+
+        if (!record) {
+          throw new Error(`No current GP record was returned for catalog ID ${catalogId}.`);
+        }
+
+        addOrReplaceRecord(record);
+        selectRecord(record);
+        renderSatelliteOptions(record.NORAD_CAT_ID);
+
+        setStatus(
+          elements.dataStatus,
+          `Loaded and selected ${record.OBJECT_NAME || "unnamed object"} (${record.NORAD_CAT_ID}).`,
+          "success"
+        );
+      } catch (error) {
+        console.error(error);
+        setStatus(
+          elements.dataStatus,
+          `Could not load catalog ID ${catalogId}: ${error.message}`,
+          "error"
+        );
+      } finally {
+        setLoading(elements.loadCatalogButton, false);
+      }
+    }
+
+    async function refreshCurrentSatellite() {
+      if (!appState.selectedRecord) {
+        setStatus(
+          elements.dataStatus,
+          "Select a satellite before refreshing its element set.",
+          "warning"
+        );
+        return;
+      }
+
+      const catalogId = appState.selectedRecord.NORAD_CAT_ID;
+      setLoading(elements.refreshSatelliteButton, true);
+      setStatus(elements.dataStatus, `Refreshing catalog ID ${catalogId}…`);
+
+      try {
+        const record = await fetchCurrentRecordByCatalogId(catalogId);
+
+        if (!record) {
+          throw new Error("No current record returned.");
+        }
+
+        addOrReplaceRecord(record);
+        selectRecord(record);
+        renderSatelliteOptions(record.NORAD_CAT_ID);
+
+        setStatus(
+          elements.dataStatus,
+          `Refreshed ${record.OBJECT_NAME || "satellite"} (${record.NORAD_CAT_ID}).`,
+          "success"
+        );
+      } catch (error) {
+        console.error(error);
+        setStatus(
+          elements.dataStatus,
+          `Could not refresh satellite: ${error.message}`,
+          "error"
+        );
+      } finally {
+        setLoading(elements.refreshSatelliteButton, false);
+      }
+    }
+
+    async function fetchCurrentRecordByCatalogId(catalogId) {
+      const url =
+        `${CELESTRAK_BASE_URL}?CATNR=${encodeURIComponent(catalogId)}&FORMAT=json`;
+
+      const records = await fetchJson(url);
+      return Array.isArray(records) && records.length > 0 ? records[0] : null;
+    }
+
+    async function fetchJson(url) {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Accept: "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status} ${response.statusText}`);
+      }
+
+      return response.json();
+    }
+
+    function sortRecords(records) {
+      return [...records].sort((a, b) => {
+        const aName = String(a.OBJECT_NAME || "");
+        const bName = String(b.OBJECT_NAME || "");
+        return aName.localeCompare(bName);
+      });
+    }
+
+    function addOrReplaceRecord(record) {
+      const catalogId = String(record.NORAD_CAT_ID);
+      const existingIndex = appState.groupRecords.findIndex(
+        (item) => String(item.NORAD_CAT_ID) === catalogId
+      );
+
+      if (existingIndex >= 0) {
+        appState.groupRecords[existingIndex] = record;
+      } else {
+        appState.groupRecords.push(record);
+      }
+
+      appState.groupRecords = sortRecords(appState.groupRecords);
+    }
+
+    function renderSatelliteOptions(selectCatalogId = null) {
+      const query = elements.searchInput.value.trim().toLowerCase();
+
+      appState.filteredRecords = appState.groupRecords.filter((record) => {
+        if (!query) {
+          return true;
+        }
+
+        const haystack = [
+          record.OBJECT_NAME,
+          record.NORAD_CAT_ID,
+          record.OBJECT_ID
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return haystack.includes(query);
+      });
+
+      elements.satelliteSelect.innerHTML = "";
+
+      if (appState.filteredRecords.length === 0) {
+        const option = document.createElement("option");
+        option.textContent = "No matching objects found";
+        option.disabled = true;
+        elements.satelliteSelect.appendChild(option);
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+
+      appState.filteredRecords.forEach((record, index) => {
+        const option = document.createElement("option");
+        option.value = String(index);
+
+        const name = record.OBJECT_NAME || "Unnamed Object";
+        const catalogId = record.NORAD_CAT_ID || "Unknown ID";
+        const internationalId = record.OBJECT_ID ? ` · ${record.OBJECT_ID}` : "";
+
+        option.textContent = `${name} · ${catalogId}${internationalId}`;
+
+        const shouldSelect =
+          selectCatalogId !== null
+            ? String(record.NORAD_CAT_ID) === String(selectCatalogId)
+            : appState.selectedRecord &&
+              String(record.NORAD_CAT_ID) ===
+                String(appState.selectedRecord.NORAD_CAT_ID);
+
+        if (shouldSelect) {
+          option.selected = true;
+        }
+
+        fragment.appendChild(option);
+      });
+
+      elements.satelliteSelect.appendChild(fragment);
+    }
+
+    function trackSelectedSatelliteFromList() {
+      const selectedIndex = Number(elements.satelliteSelect.value);
+
+      if (
+        !Number.isInteger(selectedIndex) ||
+        !appState.filteredRecords[selectedIndex]
+      ) {
+        setStatus(
+          elements.dataStatus,
+          "Choose a satellite from the matching-object list.",
+          "warning"
+        );
+        return;
+      }
+
+      selectRecord(appState.filteredRecords[selectedIndex]);
+    }
+
+    function selectRecord(record) {
+      try {
+        if (!record || !record.MEAN_MOTION || !record.EPOCH) {
+          throw new Error("The selected object does not contain a usable GP element set.");
+        }
+
+        appState.selectedRecord = record;
+        appState.satrec = satellite.json2satrec(record);
+
+        if (!appState.satrec) {
+          throw new Error("satellite.js could not initialize this GP element set.");
+        }
+
+        appState.lastTrackUpdateMs = 0;
+        clearPassTable();
+        updateLiveDisplay(true);
+
+        setStatus(
+          elements.dataStatus,
+          `Tracking ${record.OBJECT_NAME || "unnamed object"} (${record.NORAD_CAT_ID}).`,
+          "success"
+        );
+      } catch (error) {
+        console.error(error);
+        setStatus(
+          elements.dataStatus,
+          `Could not initialize selected satellite: ${error.message}`,
+          "error"
+        );
+      }
+    }
+
+    function updateObserverFromInputs(rebuildTrack) {
+      const latitudeDeg = Number(elements.observerLat.value);
+      const longitudeDeg = Number(elements.observerLon.value);
+      const heightMeters = Number(elements.observerHeight.value);
+      const minimumElevationDeg = Number(elements.minimumElevation.value);
+
+      if (!Number.isFinite(latitudeDeg) || latitudeDeg < -90 || latitudeDeg > 90) {
+        setStatus(
+          elements.observerStatus,
+          "Latitude must be between -90 and 90 degrees.",
+          "error"
+        );
+        return false;
+      }
+
+      if (
+        !Number.isFinite(longitudeDeg) ||
+        longitudeDeg < -180 ||
+        longitudeDeg > 180
+      ) {
+        setStatus(
+          elements.observerStatus,
+          "Longitude must be between -180 and 180 degrees.",
+          "error"
+        );
+        return false;
+      }
+
+      if (!Number.isFinite(heightMeters) || heightMeters < -500 || heightMeters > 10000) {
+        setStatus(
+          elements.observerStatus,
+          "Observer height must be between -500 and 10,000 meters.",
+          "error"
+        );
+        return false;
+      }
+
+      if (
+        !Number.isFinite(minimumElevationDeg) ||
+        minimumElevationDeg < -10 ||
+        minimumElevationDeg > 90
+      ) {
+        setStatus(
+          elements.observerStatus,
+          "Minimum elevation must be between -10 and 90 degrees.",
+          "error"
+        );
+        return false;
+      }
+
+      appState.observer = {
+        latitudeDeg,
+        longitudeDeg,
+        heightMeters,
+        minimumElevationDeg,
+        geodetic: {
+          latitude: satellite.degreesToRadians(latitudeDeg),
+          longitude: satellite.degreesToRadians(longitudeDeg),
+          height: heightMeters / 1000
+        }
+      };
+
+      updateObserverMarker();
+
+      setStatus(
+        elements.observerStatus,
+        `Observer set: ${formatLatitude(latitudeDeg)}, ${formatLongitude(longitudeDeg)}, ${heightMeters.toFixed(0)} m MSL; minimum elevation ${minimumElevationDeg.toFixed(1)}°.`,
+        "success"
+      );
+
+      if (rebuildTrack) {
+        clearPassTable();
+        updateLiveDisplay(true);
+      }
+
+      return true;
+    }
+
+    function useDeviceLocation() {
+      if (!navigator.geolocation) {
+        setStatus(
+          elements.observerStatus,
+          "This browser does not support device geolocation.",
+          "error"
+        );
+        return;
+      }
+
+      setLoading(elements.deviceLocationButton, true);
+      setStatus(
+        elements.observerStatus,
+        "Requesting device location permission…"
+      );
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          elements.observerLat.value = position.coords.latitude.toFixed(6);
+          elements.observerLon.value = position.coords.longitude.toFixed(6);
+          elements.observerHeight.value = Number.isFinite(position.coords.altitude)
+            ? position.coords.altitude.toFixed(0)
+            : "0";
+
+          updateObserverFromInputs(true);
+          setLoading(elements.deviceLocationButton, false);
+        },
+        (error) => {
+          const messages = {
+            1: "Location permission was denied.",
+            2: "Device location was unavailable.",
+            3: "Location request timed out."
+          };
+
+          setStatus(
+            elements.observerStatus,
+            messages[error.code] || "Could not determine device location.",
+            "error"
+          );
+          setLoading(elements.deviceLocationButton, false);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 60000
+        }
+      );
+    }
+
+    function updateObserverMarker() {
+      if (!appState.map || !appState.observer) {
+        return;
+      }
+
+      const position = [
+        appState.observer.latitudeDeg,
+        appState.observer.longitudeDeg
+      ];
+
+      const icon = L.divIcon({
+        className: "observer-icon",
+        html: "●",
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
+      });
+
+      if (!appState.observerMarker) {
+        appState.observerMarker = L.marker(position, {
+          icon,
+          title: "Observer"
+        }).addTo(appState.map);
+      } else {
+        appState.observerMarker.setLatLng(position).setIcon(icon);
+      }
+
+      const popupText =
+        `<strong>Observer</strong><br>` +
+        `${escapeHtml(formatLatitude(appState.observer.latitudeDeg))}<br>` +
+        `${escapeHtml(formatLongitude(appState.observer.longitudeDeg))}<br>` +
+        `${appState.observer.heightMeters.toFixed(0)} m MSL`;
+
+      appState.observerMarker.bindPopup(popupText);
+
+      if (!appState.observerCircle) {
+        appState.observerCircle = L.circle(position, {
+          radius: 1000,
+          color: "#177756",
+          fillColor: "#177756",
+          fillOpacity: 0.08,
+          weight: 1
+        }).addTo(appState.map);
+      } else {
+        appState.observerCircle.setLatLng(position);
+      }
+    }
+
+    function updateLiveDisplay(forceTrackUpdate) {
+      if (!appState.satrec || !appState.selectedRecord || !appState.observer) {
+        return;
+      }
+
+      const now = new Date();
+      const state = calculateStateAt(now);
+
+      if (!state) {
+        setStatus(
+          elements.dataStatus,
+          "Propagation failed. The object may be decayed or its element set may be invalid.",
+          "error"
+        );
+        return;
+      }
+
+      appState.lastCurrentState = state;
+      updateStatePanel(state);
+      updateSatelliteMarker(state);
+
+      const nowMs = Date.now();
+      if (
+        forceTrackUpdate ||
+        nowMs - appState.lastTrackUpdateMs > TRACK_REFRESH_MS
+      ) {
+        drawGroundTrack(now);
+        appState.lastTrackUpdateMs = nowMs;
+      }
+    }
+
+    function calculateStateAt(date) {
+      if (!appState.satrec || !appState.observer) {
+        return null;
+      }
+
+      const positionAndVelocity = satellite.propagate(appState.satrec, date);
+
+      if (
+        !positionAndVelocity ||
+        !positionAndVelocity.position ||
+        positionAndVelocity.position === false
+      ) {
+        return null;
+      }
+
+      const positionEci = positionAndVelocity.position;
+      const gmst = satellite.gstime(date);
+      const geodetic = satellite.eciToGeodetic(positionEci, gmst);
+      const positionEcf = satellite.eciToEcf(positionEci, gmst);
+      const lookAngles = satellite.ecfToLookAngles(
+        appState.observer.geodetic,
+        positionEcf
+      );
+
+      const latitudeDeg = satellite.degreesLat(geodetic.latitude);
+      const longitudeDeg = satellite.degreesLong(geodetic.longitude);
+      const altitudeKm = geodetic.height;
+      const azimuthDeg = normalizeDegrees(
+        satellite.radiansToDegrees(lookAngles.azimuth)
+      );
+      const elevationDeg = satellite.radiansToDegrees(lookAngles.elevation);
+      const rangeKm = lookAngles.rangeSat;
+
+      return {
+        date,
+        latitudeDeg,
+        longitudeDeg,
+        altitudeKm,
+        azimuthDeg,
+        elevationDeg,
+        rangeKm,
+        visible:
+          elevationDeg >= appState.observer.minimumElevationDeg
+      };
+    }
+
+    function updateStatePanel(state) {
+      const record = appState.selectedRecord;
+
+      elements.stateName.textContent = record.OBJECT_NAME || "Unnamed Object";
+      elements.stateCatalog.textContent = record.NORAD_CAT_ID || "—";
+      elements.stateEpoch.textContent = record.EPOCH
+        ? formatUtc(new Date(record.EPOCH))
+        : "—";
+      elements.stateTime.textContent = formatUtc(state.date);
+
+      elements.statePosition.textContent =
+        `${formatLatitude(state.latitudeDeg)}, ${formatLongitude(state.longitudeDeg)}`;
+
+      elements.stateAltitude.textContent =
+        `${state.altitudeKm.toFixed(1)} km`;
+
+      elements.stateAzimuth.textContent =
+        `${state.azimuthDeg.toFixed(1)}°`;
+
+      elements.stateElevation.textContent =
+        `${state.elevationDeg.toFixed(1)}°`;
+
+      elements.stateRange.textContent =
+        `${state.rangeKm.toFixed(1)} km`;
+
+      elements.stateVisibility.textContent = state.visible
+        ? `VISIBLE ≥ ${appState.observer.minimumElevationDeg.toFixed(1)}°`
+        : `Not visible (< ${appState.observer.minimumElevationDeg.toFixed(1)}°)`;
+
+      elements.stateVisibility.style.color = state.visible
+        ? "var(--accent-2)"
+        : "var(--warning)";
+    }
+
+    function updateSatelliteMarker(state) {
+      if (!appState.map) {
+        return;
+      }
+
+      const position = [state.latitudeDeg, state.longitudeDeg];
+
+      const icon = L.divIcon({
+        className: "satellite-icon",
+        html: "▲",
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      });
+
+      const popupContent =
+        `<strong>${escapeHtml(appState.selectedRecord.OBJECT_NAME || "Satellite")}</strong><br>` +
+        `NORAD Catalog ID: ${escapeHtml(String(appState.selectedRecord.NORAD_CAT_ID || "—"))}<br>` +
+        `Latitude: ${escapeHtml(formatLatitude(state.latitudeDeg))}<br>` +
+        `Longitude: ${escapeHtml(formatLongitude(state.longitudeDeg))}<br>` +
+        `Altitude: ${state.altitudeKm.toFixed(1)} km<br>` +
+        `Observer elevation: ${state.elevationDeg.toFixed(1)}°`;
+
+      if (!appState.satelliteMarker) {
+        appState.satelliteMarker = L.marker(position, {
+          icon,
+          title: appState.selectedRecord.OBJECT_NAME || "Satellite"
+        }).addTo(appState.map);
+      } else {
+        appState.satelliteMarker.setLatLng(position).setIcon(icon);
+      }
+
+      appState.satelliteMarker.bindPopup(popupContent);
+    }
+
+    function drawGroundTrack(centerDate) {
+      clearGroundTrack();
+
+      if (!appState.selectedRecord) {
+        return;
+      }
+
+      const meanMotion = Number(appState.selectedRecord.MEAN_MOTION);
+      if (!Number.isFinite(meanMotion) || meanMotion <= 0) {
+        return;
+      }
+
+      /*
+        One nominal orbital period:
+        - LEO: roughly 90 minutes
+        - GEO: roughly 1,436 minutes
+
+        Capped at 24 hours for performance and map clarity.
+      */
+      const periodMinutes = Math.min(1440, 1440 / meanMotion);
+      const halfTrackMs = (periodMinutes * 60 * 1000) / 2;
+
+      let sampleStepSeconds;
+      if (periodMinutes <= 180) {
+        sampleStepSeconds = 20;
+      } else if (periodMinutes <= 720) {
+        sampleStepSeconds = 60;
+      } else {
+        sampleStepSeconds = 120;
+      }
+
+      const startDate = new Date(centerDate.getTime() - halfTrackMs);
+      const endDate = new Date(centerDate.getTime() + halfTrackMs);
+
+      const pastPoints = [];
+      const futurePoints = [];
+
+      for (
+        let timeMs = startDate.getTime();
+        timeMs <= endDate.getTime();
+        timeMs += sampleStepSeconds * 1000
+      ) {
+        const sampleDate = new Date(timeMs);
+        const state = calculateStateAt(sampleDate);
+
+        if (!state) {
+          continue;
+        }
+
+        const point = [state.latitudeDeg, state.longitudeDeg];
+
+        if (sampleDate.getTime() <= centerDate.getTime()) {
+          pastPoints.push(point);
+        } else {
+          futurePoints.push(point);
+        }
+      }
+
+      const pastSegments = splitAtAntimeridian(pastPoints);
+      const futureSegments = splitAtAntimeridian(futurePoints);
+
+      appState.pastTrackLayers = pastSegments.map((segment) =>
+        L.polyline(segment, {
+          color: "#1677ff",
+          weight: 3,
+          opacity: 0.85
+        }).addTo(appState.map)
+      );
+
+      appState.futureTrackLayers = futureSegments.map((segment) =>
+        L.polyline(segment, {
+          color: "#d91e18",
+          weight: 3,
+          opacity: 0.9,
+          dashArray: "8, 7"
+        }).addTo(appState.map)
+      );
+    }
+
+    function clearGroundTrack() {
+      [...appState.pastTrackLayers, ...appState.futureTrackLayers].forEach(
+        (layer) => {
+          appState.map.removeLayer(layer);
+        }
+      );
+
+      appState.pastTrackLayers = [];
+      appState.futureTrackLayers = [];
+    }
+
+    function splitAtAntimeridian(points) {
+      if (points.length === 0) {
+        return [];
+      }
+
+      const segments = [];
+      let currentSegment = [points[0]];
+
+      for (let index = 1; index < points.length; index++) {
+        const previous = points[index - 1];
+        const current = points[index];
+
+        const previousLongitude = previous[1];
+        const currentLongitude = current[1];
+
+        if (Math.abs(currentLongitude - previousLongitude) > 180) {
+          if (currentSegment.length > 1) {
+            segments.push(currentSegment);
+          }
+          currentSegment = [current];
+        } else {
+          currentSegment.push(current);
+        }
+      }
+
+      if (currentSegment.length > 1) {
+        segments.push(currentSegment);
+      }
+
+      return segments;
+    }
+
+    function fitMapToGroundTrack() {
+      const layers = [
+        ...appState.pastTrackLayers,
+        ...appState.futureTrackLayers
+      ];
+
+      if (layers.length === 0) {
+        return;
+      }
+
+      const group = L.featureGroup(layers);
+
+      try {
+        appState.map.fitBounds(group.getBounds(), {
+          padding: [30, 30],
+          maxZoom: 6
+        });
+      } catch (error) {
+        console.warn("Could not fit bounds to ground track.", error);
+      }
+    }
+
+    async function predictPasses() {
+      if (!appState.satrec || !appState.selectedRecord || !appState.observer) {
+        setStatus(
+          elements.passStatus,
+          "Select a satellite and enter a valid observer location first.",
+          "warning"
+        );
+        return;
+      }
+
+      if (appState.isCalculatingPasses) {
+        return;
+      }
+
+      appState.isCalculatingPasses = true;
+      setLoading(elements.predictPassesButton, true);
+      setStatus(
+        elements.passStatus,
+        `Scanning the next ${PASS_SEARCH_HOURS} hours at ${PASS_SCAN_STEP_SECONDS}-second intervals…`
+      );
+
+      /*
+        Yield once so the UI can repaint its busy state before the calculation begins.
+      */
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+
+      try {
+        const startDate = new Date();
+        const endDate = new Date(
+          startDate.getTime() + PASS_SEARCH_HOURS * 60 * 60 * 1000
+        );
+
+        const passes = findPasses(
+          startDate,
+          endDate,
+          PASS_SCAN_STEP_SECONDS
+        );
+
+        renderPasses(passes);
+
+        if (passes.length === 0) {
+          setStatus(
+            elements.passStatus,
+            `No passes reached ${appState.observer.minimumElevationDeg.toFixed(1)}° elevation in the next ${PASS_SEARCH_HOURS} hours.`,
+            "warning"
+          );
+        } else {
+          setStatus(
+            elements.passStatus,
+            `Found ${passes.length} pass(es) reaching at least ${appState.observer.minimumElevationDeg.toFixed(1)}° elevation.`,
+            "success"
+          );
+        }
+      } catch (error) {
+        console.error(error);
+        setStatus(
+          elements.passStatus,
+          `Pass prediction failed: ${error.message}`,
+          "error"
+        );
+      } finally {
+        appState.isCalculatingPasses = false;
+        setLoading(elements.predictPassesButton, false);
+      }
+    }
+
+    function findPasses(startDate, endDate, stepSeconds) {
+      const passes = [];
+      const thresholdDeg = appState.observer.minimumElevationDeg;
+      const stepMs = stepSeconds * 1000;
+
+      let previousTime = new Date(startDate.getTime());
+      let previousState = calculateStateAt(previousTime);
+
+      if (!previousState) {
+        throw new Error("Could not calculate the starting satellite state.");
+      }
+
+      let wasVisible = previousState.elevationDeg >= thresholdDeg;
+      let currentPassStart = wasVisible ? new Date(startDate.getTime()) : null;
+      let startsBeforeWindow = wasVisible;
+
+      for (
+        let currentMs = startDate.getTime() + stepMs;
+        currentMs <= endDate.getTime();
+        currentMs += stepMs
+      ) {
+        const currentTime = new Date(currentMs);
+        const currentState = calculateStateAt(currentTime);
+
+        if (!currentState) {
+          previousTime = currentTime;
+          previousState = currentState;
+          continue;
+        }
+
+        const isVisible = currentState.elevationDeg >= thresholdDeg;
+
+        if (!wasVisible && isVisible) {
+          currentPassStart = refineElevationThresholdCrossing(
+            previousTime,
+            currentTime,
+            thresholdDeg,
+            true
+          );
+          startsBeforeWindow = false;
+        }
+
+        if (wasVisible && !isVisible && currentPassStart) {
+          const passEnd = refineElevationThresholdCrossing(
+            previousTime,
+            currentTime,
+            thresholdDeg,
+            false
+          );
+
+          passes.push(
+            buildPassRecord(
+              currentPassStart,
+              passEnd,
+              startsBeforeWindow,
+              false
+            )
+          );
+
+          currentPassStart = null;
+          startsBeforeWindow = false;
+        }
+
+        previousTime = currentTime;
+        previousState = currentState;
+        wasVisible = isVisible;
+      }
+
+      if (wasVisible && currentPassStart) {
+        passes.push(
+          buildPassRecord(
+            currentPassStart,
+            endDate,
+            startsBeforeWindow,
+            true
+          )
+        );
+      }
+
+      return passes;
+    }
+
+    function refineElevationThresholdCrossing(
+      leftDate,
+      rightDate,
+      thresholdDeg,
+      isRising
+    ) {
+      let leftMs = leftDate.getTime();
+      let rightMs = rightDate.getTime();
+
+      /*
+        Binary-search the threshold crossing to approximately one-second precision.
+      */
+      for (let iteration = 0; iteration < 20; iteration++) {
+        if (rightMs - leftMs <= 1000) {
+          break;
+        }
+
+        const middleMs = Math.floor((leftMs + rightMs) / 2);
+        const middleState = calculateStateAt(new Date(middleMs));
+
+        if (!middleState) {
+          break;
+        }
+
+        const middleVisible = middleState.elevationDeg >= thresholdDeg;
+
+        if (isRising) {
+          if (middleVisible) {
+            rightMs = middleMs;
+          } else {
+            leftMs = middleMs;
+          }
+        } else {
+          if (middleVisible) {
+            leftMs = middleMs;
+          } else {
+            rightMs = middleMs;
+          }
+        }
+      }
+
+      return new Date(isRising ? rightMs : leftMs);
+    }
+
+    function buildPassRecord(
+      startDate,
+      endDate,
+      startsBeforeWindow,
+      endsAfterWindow
+    ) {
+      const maximum = findMaximumElevation(startDate, endDate);
+      const startState = calculateStateAt(startDate);
+      const endState = calculateStateAt(endDate);
+
+      return {
+        startDate,
+        endDate,
+        startsBeforeWindow,
+        endsAfterWindow,
+        durationSeconds: Math.max(
+          0,
+          Math.round((endDate.getTime() - startDate.getTime()) / 1000)
+        ),
+        maximumDate: maximum.date,
+        maximumElevationDeg: maximum.elevationDeg,
+        riseAzimuthDeg: startState ? startState.azimuthDeg : null,
+        setAzimuthDeg: endState ? endState.azimuthDeg : null
+      };
+    }
+
+    function findMaximumElevation(startDate, endDate) {
+      let leftMs = startDate.getTime();
+      let rightMs = endDate.getTime();
+
+      /*
+        A ternary search works well for a normal single satellite pass,
+        whose elevation curve has one principal maximum.
+      */
+      for (let iteration = 0; iteration < 32; iteration++) {
+        const firstThirdMs = leftMs + (rightMs - leftMs) / 3;
+        const secondThirdMs = rightMs - (rightMs - leftMs) / 3;
+
+        const firstState = calculateStateAt(new Date(firstThirdMs));
+        const secondState = calculateStateAt(new Date(secondThirdMs));
+
+        if (!firstState || !secondState) {
+          break;
+        }
+
+        if (firstState.elevationDeg < secondState.elevationDeg) {
+          leftMs = firstThirdMs;
+        } else {
+          rightMs = secondThirdMs;
+        }
+      }
+
+      const candidateDates = [
+        new Date(startDate.getTime()),
+        new Date((leftMs + rightMs) / 2),
+        new Date(endDate.getTime())
+      ];
+
+      let best = null;
+
+      candidateDates.forEach((date) => {
+        const state = calculateStateAt(date);
+
+        if (!state) {
+          return;
+        }
+
+        if (!best || state.elevationDeg > best.elevationDeg) {
+          best = {
+            date,
+            elevationDeg: state.elevationDeg
+          };
+        }
+      });
+
+      return best || {
+        date: startDate,
+        elevationDeg: Number.NaN
+      };
+    }
+
+    function renderPasses(passes) {
+      elements.passTableBody.innerHTML = "";
+
+      if (passes.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 6;
+        cell.textContent = "No qualifying passes in the selected prediction window.";
+        row.appendChild(cell);
+        elements.passTableBody.appendChild(row);
+        return;
+      }
+
+      const fragment = document.createDocumentFragment();
+
+      passes.forEach((pass) => {
+        const row = document.createElement("tr");
+
+        const startCell = document.createElement("td");
+        startCell.textContent = pass.startsBeforeWindow
+          ? `${formatUtc(pass.startDate)}*`
+          : formatUtc(pass.startDate);
+
+        const endCell = document.createElement("td");
+        endCell.textContent = pass.endsAfterWindow
+          ? `${formatUtc(pass.endDate)}*`
+          : formatUtc(pass.endDate);
+
+        const durationCell = document.createElement("td");
+        durationCell.textContent = formatDuration(pass.durationSeconds);
+
+        const maxElevationCell = document.createElement("td");
+        maxElevationCell.className = "pass-visible";
+        maxElevationCell.textContent =
+          `${pass.maximumElevationDeg.toFixed(1)}°`;
+
+        const riseAzimuthCell = document.createElement("td");
+        riseAzimuthCell.textContent = Number.isFinite(pass.riseAzimuthDeg)
+          ? `${pass.riseAzimuthDeg.toFixed(1)}°`
+          : "—";
+
+        const setAzimuthCell = document.createElement("td");
+        setAzimuthCell.textContent = Number.isFinite(pass.setAzimuthDeg)
+          ? `${pass.setAzimuthDeg.toFixed(1)}°`
+          : "—";
+
+        row.append(
+          startCell,
+          endCell,
+          durationCell,
+          maxElevationCell,
+          riseAzimuthCell,
+          setAzimuthCell
+        );
+
+        fragment.appendChild(row);
+      });
+
+      elements.passTableBody.appendChild(fragment);
+
+      const noteRow = document.createElement("tr");
+      const noteCell = document.createElement("td");
+      noteCell.colSpan = 6;
+      noteCell.style.color = "#aebed3";
+      noteCell.style.fontSize = "11px";
+      noteCell.textContent =
+        "* Indicates that the pass was already underway at the beginning of the 24-hour search window or continues beyond its end.";
+      noteRow.appendChild(noteCell);
+      elements.passTableBody.appendChild(noteRow);
+    }
+
+    function clearPassTable() {
+      elements.passTableBody.innerHTML = `
+        <tr>
+          <td colspan="6">Pass data is cleared. Select “Calculate Passes” to generate a new prediction.</td>
+        </tr>
+      `;
+
+      setStatus(
+        elements.passStatus,
+        "Pass prediction must be recalculated after changing the satellite or observer settings."
+      );
+    }
+
+    function setStatus(element, message, type = "") {
+      element.textContent = message;
+      element.className = `status${type ? ` ${type}` : ""}`;
+    }
+
+    function setLoading(button, isLoading) {
+      button.disabled = isLoading;
+
+      if (!button.dataset.originalText) {
+        button.dataset.originalText = button.textContent;
+      }
+
+      button.textContent = isLoading
+        ? "Working…"
+        : button.dataset.originalText;
+    }
+
+    function formatUtc(date) {
+      if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+        return "—";
+      }
+
+      return date
+        .toISOString()
+        .replace("T", " ")
+        .replace(/\.\d{3}Z$/, "Z");
+    }
+
+    function formatDuration(totalSeconds) {
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      if (hours > 0) {
+        return `${hours}h ${minutes}m ${seconds}s`;
+      }
+
+      return `${minutes}m ${seconds}s`;
+    }
+
+    function formatLatitude(latitudeDeg) {
+      return `${Math.abs(latitudeDeg).toFixed(4)}° ${
+        latitudeDeg >= 0 ? "N" : "S"
+      }`;
+    }
+
+    function formatLongitude(longitudeDeg) {
+      return `${Math.abs(longitudeDeg).toFixed(4)}° ${
+        longitudeDeg >= 0 ? "E" : "W"
+      }`;
+    }
+
+    function normalizeDegrees(degrees) {
+      return ((degrees % 360) + 360) % 360;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    initializeApplication();
+  </script>
+</body>
+</html>
