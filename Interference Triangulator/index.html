@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interference Bearing Triangulator</title>
 
+    <!-- Leaflet map library and styling -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
     <style>
         :root {
             --blue: #0066cc;
@@ -204,19 +210,108 @@
             font-size: 11px;
         }
 
-        .plot-container {
-            overflow-x: auto;
+        .map-container {
+            overflow: hidden;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
             background: #ffffff;
         }
 
-        #local-plot {
-            display: block;
+        #local-map {
             width: 100%;
-            min-width: 640px;
-            height: auto;
-            background: #ffffff;
+            height: 520px;
+            background: #e2e8f0;
+        }
+
+        .map-status {
+            margin-top: 8px;
+            padding: 7px 9px;
+            border-radius: 4px;
+            background: #f0f7ff;
+            border-left: 4px solid var(--blue);
+            color: #1e3a5f;
+            font-size: 12px;
+        }
+
+        .map-status.warning {
+            background: #fffbeb;
+            border-left-color: var(--amber);
+            color: #78350f;
+        }
+
+        .leaflet-container {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .map-legend {
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+            font-size: 11px;
+            line-height: 1.45;
+        }
+
+        .map-legend-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #0f172a;
+        }
+
+        .legend-line {
+            display: inline-block;
+            width: 20px;
+            height: 0;
+            margin-right: 5px;
+            vertical-align: middle;
+            border-top: 3px solid #0f766e;
+        }
+
+        .legend-line.outlier {
+            border-top-color: #dc2626;
+            border-top-style: dashed;
+        }
+
+        .legend-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            margin-right: 5px;
+            border-radius: 50%;
+            background: #2563eb;
+            vertical-align: middle;
+        }
+
+        .legend-dot.outlier {
+            background: #dc2626;
+        }
+
+        .legend-estimate {
+            display: inline-block;
+            width: 16px;
+            margin-right: 4px;
+            color: #16a34a;
+            font-weight: bold;
+            font-size: 17px;
+            line-height: 10px;
+            vertical-align: middle;
+        }
+
+        .estimate-map-marker {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border: 3px solid #166534;
+            border-radius: 50%;
+            background: rgba(240, 253, 244, 0.94);
+            color: #166534;
+            font-size: 24px;
+            font-weight: bold;
+            line-height: 22px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
         }
 
         .small-note {
@@ -243,6 +338,7 @@
 
 <body>
     <h1>📡 Interference Bearing Triangulator</h1>
+
     <p class="small-note" style="margin-bottom: 12px;">
         This tool estimates the intersection of manually observed bearings. It does not independently detect or identify an interference source.
     </p>
@@ -446,18 +542,26 @@
     </div>
 
     <div class="card">
-        <h2>🗺️ Local Geometry Plot</h2>
+        <h2>🗺️ Geographic Observation Map</h2>
 
         <p class="small-note">
-            Blue/green rays are observations used in the estimate. Red dashed rays are suspected outliers or inconsistent observations.
+            Green bearing lines are observations used in the estimate. Red dashed lines are suspected outliers or inconsistent observations. The green crosshair is the calculated intersection estimate.
         </p>
 
-        <div class="plot-container">
-            <canvas id="local-plot" width="900" height="520">
-                Your browser does not support canvas rendering.
-            </canvas>
+        <div class="map-container">
+            <div
+                id="local-map"
+                role="region"
+                aria-label="Map showing observation locations, bearing rays, and calculated intersection estimate"
+            ></div>
+        </div>
+
+        <div id="map-status" class="map-status" aria-live="polite">
+            Loading live OpenStreetMap basemap.
         </div>
     </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
         let liveLat = null;
@@ -485,6 +589,16 @@
         let observations = [];
         let nextObservationId = 1;
         let currentSolution = null;
+
+        let localMap = null;
+        let mapTileLayer = null;
+        let mapTileFailureReported = false;
+
+        let mapLayers = {
+            rays: null,
+            stations: null,
+            estimate: null
+        };
 
         const FILTER_FACTOR = 0.20;
         const STORAGE_KEY = "interference-bearing-triangulator-v2";
@@ -574,6 +688,104 @@
             badge.className = isGood
                 ? "status-badge status-ok"
                 : "status-badge status-warn";
+        }
+
+        function setMapStatus(message, isWarning = false) {
+            const status = document.getElementById("map-status");
+            status.textContent = message;
+            status.className = isWarning
+                ? "map-status warning"
+                : "map-status";
+        }
+
+        function initializeLocalMap() {
+            if (!window.L) {
+                setMapStatus(
+                    "Map library could not load. Verify network access to the Leaflet CDN.",
+                    true
+                );
+                return false;
+            }
+
+            if (localMap) {
+                return true;
+            }
+
+            localMap = L.map("local-map", {
+                zoomControl: true,
+                attributionControl: true
+            });
+
+            localMap.setView([20, 0], 2);
+
+            mapTileLayer = L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+                    maxZoom: 19,
+                    attribution:
+                        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }
+            );
+
+            mapTileLayer.on("tileerror", () => {
+                if (!mapTileFailureReported) {
+                    mapTileFailureReported = true;
+
+                    setMapStatus(
+                        "One or more OpenStreetMap tiles could not load. Observation and estimate overlays remain available, but the basemap may be incomplete.",
+                        true
+                    );
+                }
+            });
+
+            mapTileLayer.addTo(localMap);
+
+            mapLayers.rays = L.layerGroup().addTo(localMap);
+            mapLayers.stations = L.layerGroup().addTo(localMap);
+            mapLayers.estimate = L.layerGroup().addTo(localMap);
+
+            L.control.scale({
+                imperial: false,
+                position: "bottomleft"
+            }).addTo(localMap);
+
+            const legend = L.control({
+                position: "topright"
+            });
+
+            legend.onAdd = () => {
+                const div = L.DomUtil.create("div", "map-legend");
+
+                div.innerHTML = `
+                    <div class="map-legend-title">Map Legend</div>
+                    <div><span class="legend-dot"></span>Observation</div>
+                    <div><span class="legend-line"></span>Used bearing ray</div>
+                    <div><span class="legend-dot outlier"></span>Suspected outlier</div>
+                    <div><span class="legend-line outlier"></span>Outlier bearing ray</div>
+                    <div><span class="legend-estimate">+</span>Estimate</div>
+                `;
+
+                L.DomEvent.disableClickPropagation(div);
+                L.DomEvent.disableScrollPropagation(div);
+
+                return div;
+            };
+
+            legend.addTo(localMap);
+
+            setMapStatus(
+                "Live OpenStreetMap basemap active. Record observations to display station locations and bearing rays."
+            );
+
+            return true;
+        }
+
+        function clearMapLayers() {
+            for (const layer of Object.values(mapLayers)) {
+                if (layer) {
+                    layer.clearLayers();
+                }
+            }
         }
 
         function renderCaptureSummary() {
@@ -761,8 +973,10 @@
             } else if (
                 event.alpha !== null &&
                 Number.isFinite(event.alpha) &&
-                (event.absolute === true ||
-                    event.type === "deviceorientationabsolute")
+                (
+                    event.absolute === true ||
+                    event.type === "deviceorientationabsolute"
+                )
             ) {
                 rawHeading = normalizeDegrees(360 - event.alpha);
                 document.getElementById("compass-acc").textContent = "Unknown";
@@ -795,6 +1009,7 @@
 
             if (isAveraging) {
                 averageReadings.push(liveRawHeading);
+
                 document.getElementById("avg-count").textContent =
                     averageReadings.length;
             }
@@ -900,7 +1115,9 @@
                 const capture = circularMeanAndSpread(averageReadings);
 
                 liveRawHeading = capture.mean;
-                liveHeading = normalizeDegrees(capture.mean + headingOffset);
+                liveHeading = normalizeDegrees(
+                    capture.mean + headingOffset
+                );
 
                 lastHeadingCapture = {
                     rawHeading: capture.mean,
@@ -923,7 +1140,9 @@
 
         function refreshHeadingAfterOffsetChange() {
             if (liveRawHeading !== null) {
-                liveHeading = normalizeDegrees(liveRawHeading + headingOffset);
+                liveHeading = normalizeDegrees(
+                    liveRawHeading + headingOffset
+                );
 
                 document.getElementById("live-heading").textContent =
                     Math.round(liveHeading);
@@ -1125,23 +1344,28 @@
                 row.append(header);
 
                 appendLine(row, `Status: ${state.label}`);
+
                 appendLine(
                     row,
                     `Position: ${observation.lat.toFixed(6)}, ${observation.lon.toFixed(6)}`
                 );
+
                 appendLine(
                     row,
                     `GPS Accuracy: ±${Math.round(observation.gpsAccuracy)}m`
                 );
+
                 appendLine(
                     row,
                     `Bearing: ${Math.round(observation.head)}°`
                 );
+
                 appendLine(
                     row,
                     `Heading Spread: ±${observation.headingSpread.toFixed(1)}° ` +
                     `(${observation.headingSamples} samples)`
                 );
+
                 appendLine(
                     row,
                     `Recorded: ${new Date(observation.timestamp).toLocaleString()}`
@@ -1192,7 +1416,11 @@
                 theta: record.head * Math.PI / 180
             }));
 
-            return { reference, meters, points };
+            return {
+                reference,
+                meters,
+                points
+            };
         }
 
         function localToGeographic(x, y, reference, meters) {
@@ -1204,8 +1432,10 @@
 
         function bearingFromPointToTarget(point, target) {
             return normalizeDegrees(
-                Math.atan2(target.x - point.x, target.y - point.y) *
-                180 / Math.PI
+                Math.atan2(
+                    target.x - point.x,
+                    target.y - point.y
+                ) * 180 / Math.PI
             );
         }
 
@@ -1218,7 +1448,10 @@
 
         function angularResidual(point, target) {
             const predictedBearing = bearingFromPointToTarget(point, target);
-            return Math.abs(signedAngleDifference(point.head, predictedBearing));
+
+            return Math.abs(
+                signedAngleDifference(point.head, predictedBearing)
+            );
         }
 
         function intersectRays(a, b) {
@@ -1226,6 +1459,7 @@
             const dy = b.y - a.y;
 
             const baseline = Math.hypot(dx, dy);
+
             const requiredBaseline = Math.max(
                 MIN_BASELINE_METERS,
                 2 * Math.hypot(a.gpsAccuracy, b.gpsAccuracy)
@@ -1236,6 +1470,7 @@
             }
 
             const denominator = Math.sin(a.theta - b.theta);
+
             const crossingAngle = Math.asin(
                 Math.min(1, Math.abs(denominator))
             ) * 180 / Math.PI;
@@ -1276,11 +1511,10 @@
                 const threshold = headingThreshold(point);
                 const normalizedResidual = residual / threshold;
 
-                /*
-                 * Cap each error contribution. This prevents one highly
-                 * inconsistent observation from dominating all candidate scores.
-                 */
-                score += Math.min(normalizedResidual * normalizedResidual, 9);
+                score += Math.min(
+                    normalizedResidual * normalizedResidual,
+                    9
+                );
 
                 if (residual <= threshold) {
                     inlierCount += 1;
@@ -1299,10 +1533,6 @@
             const headingSigma = Math.max(2, point.headingSpread);
             const positionSigma = Math.max(3, point.gpsAccuracy);
 
-            /*
-             * Relative weight only. A lower heading spread and lower GPS
-             * uncertainty increase the influence of an observation.
-             */
             return 1 / (
                 headingSigma * headingSigma +
                 Math.pow(positionSigma / 5, 2)
@@ -1317,10 +1547,6 @@
             let e = 0;
 
             for (const point of points) {
-                /*
-                 * Direction vector: (sin(theta), cos(theta))
-                 * Unit normal vector: (cos(theta), -sin(theta))
-                 */
                 const nx = Math.cos(point.theta);
                 const ny = -Math.sin(point.theta);
                 const weight = weightForPoint(point);
@@ -1343,8 +1569,12 @@
             const y = (a * e - b * d) / determinant;
 
             const trace = a + c;
+
             const discriminant = Math.sqrt(
-                Math.max(0, (a - c) * (a - c) + 4 * b * b)
+                Math.max(
+                    0,
+                    (a - c) * (a - c) + 4 * b * b
+                )
             );
 
             const lambdaMax = (trace + discriminant) / 2;
@@ -1378,10 +1608,16 @@
                     maxBaseline = Math.max(maxBaseline, baseline);
 
                     const angle = Math.asin(
-                        Math.min(1, Math.abs(Math.sin(a.theta - b.theta)))
+                        Math.min(
+                            1,
+                            Math.abs(Math.sin(a.theta - b.theta))
+                        )
                     ) * 180 / Math.PI;
 
-                    bestCrossingAngle = Math.max(bestCrossingAngle, angle);
+                    bestCrossingAngle = Math.max(
+                        bestCrossingAngle,
+                        angle
+                    );
                 }
             }
 
@@ -1458,14 +1694,14 @@
                 showResultInfo(
                     "Record at least two observations to calculate an intersection estimate."
                 );
+
                 renderObservationHistory();
-                drawLocalPlot();
+                drawLocalMap();
                 return;
             }
 
             const geometry = buildLocalPoints(observations);
             const points = geometry.points;
-
             const candidates = [];
 
             for (let i = 0; i < points.length; i++) {
@@ -1482,8 +1718,9 @@
                 showResultError(
                     "No valid forward intersection could be calculated. Increase station separation, improve crossing angles, or repeat the observations."
                 );
+
                 renderObservationHistory();
-                drawLocalPlot();
+                drawLocalMap();
                 return;
             }
 
@@ -1512,8 +1749,9 @@
                 showResultError(
                     "No consistent group of at least two forward-bearing observations was found."
                 );
+
                 renderObservationHistory();
-                drawLocalPlot();
+                drawLocalMap();
                 return;
             }
 
@@ -1523,15 +1761,12 @@
                 showResultError(
                     "The observation geometry is degenerate and cannot produce a stable estimate."
                 );
+
                 renderObservationHistory();
-                drawLocalPlot();
+                drawLocalMap();
                 return;
             }
 
-            /*
-             * Reclassify observations against the weighted best-fit point, then
-             * perform one final fit using the revised inlier set.
-             */
             inlierPoints = points.filter(
                 (point) => angularResidual(point, fit) <= headingThreshold(point)
             );
@@ -1545,7 +1780,10 @@
             }
 
             const outlierPoints = points.filter(
-                (point) => !inlierPoints.some((inlier) => inlier.id === point.id)
+                (point) =>
+                    !inlierPoints.some(
+                        (inlier) => inlier.id === point.id
+                    )
             );
 
             const geographicEstimate = localToGeographic(
@@ -1575,7 +1813,7 @@
 
             showResultSuccess(currentSolution);
             renderObservationHistory();
-            drawLocalPlot();
+            drawLocalMap();
         }
 
         function triangulate() {
@@ -1596,6 +1834,7 @@
 
         function showResultSuccess(solution) {
             const output = document.getElementById("result-box");
+
             const qualityClass = solution.quality.quality === "HIGH"
                 ? "quality-high"
                 : solution.quality.quality === "MEDIUM"
@@ -1611,29 +1850,35 @@
 
             const quality = document.createElement("span");
             quality.className = qualityClass;
-            quality.textContent = `Estimate Quality: ${solution.quality.quality}`;
+            quality.textContent =
+                `Estimate Quality: ${solution.quality.quality}`;
 
             output.append(title, document.createElement("br"));
             output.append(quality, document.createElement("br"));
 
             appendLine(output, `Lat: ${solution.lat.toFixed(6)}`);
             appendLine(output, `Lon: ${solution.lon.toFixed(6)}`);
+
             appendLine(
                 output,
                 `Observations Used: ${solution.inlierIds.length} of ${observations.length}`
             );
+
             appendLine(
                 output,
                 `Best Crossing Angle: ${solution.quality.bestCrossingAngle.toFixed(1)}°`
             );
+
             appendLine(
                 output,
                 `Maximum Baseline: ${Math.round(solution.quality.maxBaseline)}m`
             );
+
             appendLine(
                 output,
                 `Mean Bearing Residual: ${solution.quality.meanResidual.toFixed(1)}°`
             );
+
             appendLine(
                 output,
                 `Geometry Condition Number: ${solution.quality.conditionNumber.toFixed(1)}`
@@ -1660,7 +1905,10 @@
                 warningTitle.style.color = "#b45309";
                 warningTitle.textContent = "Geometry Warnings:";
 
-                output.append(warningTitle, document.createElement("br"));
+                output.append(
+                    warningTitle,
+                    document.createElement("br")
+                );
 
                 for (const warning of solution.quality.warnings) {
                     appendLine(output, `• ${warning}`);
@@ -1696,40 +1944,58 @@
             );
         }
 
-        function drawLocalPlot() {
-            const canvas = document.getElementById("local-plot");
-            const context = canvas.getContext("2d");
+        function createObservationPopup(point, isInlier, isOutlier) {
+            const status = isOutlier
+                ? "Suspected Outlier"
+                : isInlier
+                    ? "Used in Estimate"
+                    : "Awaiting Estimate";
 
-            const width = canvas.width;
-            const height = canvas.height;
-            const margin = 55;
+            return `
+                <strong>Observation ${point.id}</strong><br>
+                Status: ${status}<br>
+                Position: ${point.lat.toFixed(6)}, ${point.lon.toFixed(6)}<br>
+                Bearing: ${Math.round(point.head)}°<br>
+                Heading Spread: ±${point.headingSpread.toFixed(1)}°<br>
+                GPS Accuracy: ±${Math.round(point.gpsAccuracy)}m
+            `;
+        }
 
-            context.clearRect(0, 0, width, height);
-            context.fillStyle = "#ffffff";
-            context.fillRect(0, 0, width, height);
-
-            if (observations.length === 0) {
-                context.fillStyle = "#64748b";
-                context.font = "16px sans-serif";
-                context.textAlign = "center";
-                context.fillText(
-                    "Record observations to display local geometry.",
-                    width / 2,
-                    height / 2
-                );
+        function drawLocalMap() {
+            if (!initializeLocalMap()) {
                 return;
             }
 
-            let plotPoints;
+            clearMapLayers();
 
-            if (currentSolution) {
-                plotPoints = currentSolution.points;
-            } else {
-                plotPoints = buildLocalPoints(observations).points;
+            if (observations.length === 0) {
+                if (!mapTileFailureReported) {
+                    setMapStatus(
+                        "Live OpenStreetMap basemap active. Record observations to display station locations and bearing rays."
+                    );
+                }
+
+                localMap.setView([20, 0], 2);
+                return;
             }
 
+            const geometry = currentSolution
+                ? {
+                    reference: currentSolution.reference,
+                    meters: currentSolution.meters,
+                    points: currentSolution.points
+                }
+                : buildLocalPoints(observations);
+
+            const plotPoints = geometry.points;
+
             const target = currentSolution
-                ? { x: currentSolution.x, y: currentSolution.y }
+                ? {
+                    x: currentSolution.x,
+                    y: currentSolution.y,
+                    lat: currentSolution.lat,
+                    lon: currentSolution.lon
+                }
                 : null;
 
             const worldPoints = [...plotPoints];
@@ -1738,70 +2004,31 @@
                 worldPoints.push(target);
             }
 
-            let minX = Math.min(...worldPoints.map((point) => point.x));
-            let maxX = Math.max(...worldPoints.map((point) => point.x));
-            let minY = Math.min(...worldPoints.map((point) => point.y));
-            let maxY = Math.max(...worldPoints.map((point) => point.y));
+            let minX = Math.min(
+                ...worldPoints.map((point) => point.x)
+            );
+
+            let maxX = Math.max(
+                ...worldPoints.map((point) => point.x)
+            );
+
+            let minY = Math.min(
+                ...worldPoints.map((point) => point.y)
+            );
+
+            let maxY = Math.max(
+                ...worldPoints.map((point) => point.y)
+            );
 
             const minimumSpan = 60;
             const spanX = Math.max(minimumSpan, maxX - minX);
             const spanY = Math.max(minimumSpan, maxY - minY);
             const span = Math.max(spanX, spanY);
 
-            minX -= span * 0.2;
-            maxX += span * 0.2;
-            minY -= span * 0.2;
-            maxY += span * 0.2;
-
-            const worldWidth = maxX - minX;
-            const worldHeight = maxY - minY;
-
-            function toCanvas(point) {
-                return {
-                    x: margin + ((point.x - minX) / worldWidth) * (width - 2 * margin),
-                    y: height - margin - ((point.y - minY) / worldHeight) * (height - 2 * margin)
-                };
-            }
-
-            function drawGrid() {
-                context.strokeStyle = "#e5e7eb";
-                context.lineWidth = 1;
-
-                for (let i = 0; i <= 10; i++) {
-                    const x = margin + i * (width - 2 * margin) / 10;
-                    const y = margin + i * (height - 2 * margin) / 10;
-
-                    context.beginPath();
-                    context.moveTo(x, margin);
-                    context.lineTo(x, height - margin);
-                    context.stroke();
-
-                    context.beginPath();
-                    context.moveTo(margin, y);
-                    context.lineTo(width - margin, y);
-                    context.stroke();
-                }
-
-                context.strokeStyle = "#94a3b8";
-                context.strokeRect(
-                    margin,
-                    margin,
-                    width - 2 * margin,
-                    height - 2 * margin
-                );
-            }
-
-            drawGrid();
-
-            context.save();
-            context.beginPath();
-            context.rect(margin, margin, width - 2 * margin, height - 2 * margin);
-            context.clip();
-
             const rayLength = Math.max(100, span * 1.2);
+            const bounds = L.latLngBounds([]);
 
             for (const point of plotPoints) {
-                const stationCanvas = toCanvas(point);
                 const isInlier = currentSolution
                     ? currentSolution.inlierIds.includes(point.id)
                     : true;
@@ -1810,95 +2037,141 @@
                     ? currentSolution.outlierIds.includes(point.id)
                     : false;
 
-                const endPoint = target && isInlier
-                    ? target
+                const rayEndLocal = target && isInlier
+                    ? {
+                        x: target.x,
+                        y: target.y
+                    }
                     : {
                         x: point.x + rayLength * Math.sin(point.theta),
                         y: point.y + rayLength * Math.cos(point.theta)
                     };
 
-                const endCanvas = toCanvas(endPoint);
-
-                context.beginPath();
-
-                if (isOutlier) {
-                    context.setLineDash([8, 6]);
-                    context.strokeStyle = "#dc2626";
-                } else {
-                    context.setLineDash([]);
-                    context.strokeStyle = isInlier ? "#0f766e" : "#2563eb";
-                }
-
-                context.lineWidth = 2;
-                context.moveTo(stationCanvas.x, stationCanvas.y);
-                context.lineTo(endCanvas.x, endCanvas.y);
-                context.stroke();
-            }
-
-            context.setLineDash([]);
-
-            for (const point of plotPoints) {
-                const stationCanvas = toCanvas(point);
-                const isOutlier = currentSolution
-                    ? currentSolution.outlierIds.includes(point.id)
-                    : false;
-
-                context.beginPath();
-                context.fillStyle = isOutlier ? "#dc2626" : "#2563eb";
-                context.arc(stationCanvas.x, stationCanvas.y, 6, 0, Math.PI * 2);
-                context.fill();
-
-                context.fillStyle = "#111827";
-                context.font = "12px sans-serif";
-                context.textAlign = "left";
-                context.fillText(
-                    `Obs ${point.id}`,
-                    stationCanvas.x + 9,
-                    stationCanvas.y - 9
+                const rayEnd = localToGeographic(
+                    rayEndLocal.x,
+                    rayEndLocal.y,
+                    geometry.reference,
+                    geometry.meters
                 );
+
+                const rayStyle = isOutlier
+                    ? {
+                        color: "#dc2626",
+                        weight: 3,
+                        dashArray: "10, 8",
+                        opacity: 0.9
+                    }
+                    : {
+                        color: isInlier ? "#0f766e" : "#2563eb",
+                        weight: 3,
+                        opacity: 0.85
+                    };
+
+                L.polyline(
+                    [
+                        [point.lat, point.lon],
+                        [rayEnd.lat, rayEnd.lon]
+                    ],
+                    rayStyle
+                )
+                    .bindTooltip(
+                        `Observation ${point.id}: ${Math.round(point.head)}° bearing`,
+                        {
+                            sticky: true
+                        }
+                    )
+                    .addTo(mapLayers.rays);
+
+                const stationColor = isOutlier
+                    ? "#dc2626"
+                    : isInlier && currentSolution
+                        ? "#0f766e"
+                        : "#2563eb";
+
+                L.circleMarker(
+                    [point.lat, point.lon],
+                    {
+                        radius: 8,
+                        color: "#ffffff",
+                        weight: 2,
+                        fillColor: stationColor,
+                        fillOpacity: 1
+                    }
+                )
+                    .bindPopup(
+                        createObservationPopup(
+                            point,
+                            isInlier,
+                            isOutlier
+                        )
+                    )
+                    .bindTooltip(
+                        `Obs ${point.id}`,
+                        {
+                            direction: "top",
+                            offset: [0, -8]
+                        }
+                    )
+                    .addTo(mapLayers.stations);
+
+                bounds.extend([point.lat, point.lon]);
+                bounds.extend([rayEnd.lat, rayEnd.lon]);
             }
 
             if (target) {
-                const targetCanvas = toCanvas(target);
+                const estimateIcon = L.divIcon({
+                    className: "",
+                    html: '<div class="estimate-map-marker">+</div>',
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14],
+                    popupAnchor: [0, -14]
+                });
 
-                context.strokeStyle = "#16a34a";
-                context.lineWidth = 3;
+                L.marker(
+                    [target.lat, target.lon],
+                    {
+                        icon: estimateIcon,
+                        zIndexOffset: 1000
+                    }
+                )
+                    .bindPopup(`
+                        <strong>Intersection Estimate</strong><br>
+                        Latitude: ${target.lat.toFixed(6)}<br>
+                        Longitude: ${target.lon.toFixed(6)}<br>
+                        Estimate Quality: ${currentSolution.quality.quality}
+                    `)
+                    .bindTooltip(
+                        "Intersection Estimate",
+                        {
+                            direction: "top",
+                            offset: [0, -14]
+                        }
+                    )
+                    .addTo(mapLayers.estimate);
 
-                context.beginPath();
-                context.moveTo(targetCanvas.x - 10, targetCanvas.y);
-                context.lineTo(targetCanvas.x + 10, targetCanvas.y);
-                context.moveTo(targetCanvas.x, targetCanvas.y - 10);
-                context.lineTo(targetCanvas.x, targetCanvas.y + 10);
-                context.stroke();
+                bounds.extend([target.lat, target.lon]);
+            }
 
-                context.beginPath();
-                context.arc(targetCanvas.x, targetCanvas.y, 5, 0, Math.PI * 2);
-                context.fillStyle = "#16a34a";
-                context.fill();
-
-                context.fillStyle = "#166534";
-                context.font = "bold 12px sans-serif";
-                context.textAlign = "left";
-                context.fillText(
-                    "Estimate",
-                    targetCanvas.x + 12,
-                    targetCanvas.y - 12
+            if (bounds.isValid()) {
+                localMap.fitBounds(
+                    bounds.pad(0.15),
+                    {
+                        maxZoom: 17
+                    }
                 );
             }
 
-            context.restore();
+            window.setTimeout(() => {
+                localMap.invalidateSize();
+            }, 0);
 
-            context.fillStyle = "#334155";
-            context.font = "12px sans-serif";
-            context.textAlign = "left";
-            context.fillText("North ↑", margin, 24);
-
-            context.textAlign = "right";
-            context.fillText(
-                `Plot span: approximately ${Math.round(Math.max(worldWidth, worldHeight))}m`,
-                width - margin,
-                24
-            );
+            if (!mapTileFailureReported) {
+                setMapStatus(
+                    target
+                        ? "Map updated with observations, bearing rays, suspected outliers, and the calculated estimate."
+                        : "Map updated with observation locations and bearing rays. Add at least two valid observations to calculate an estimate."
+                );
+            }
         }
 
         function saveSession() {
@@ -1910,7 +2183,10 @@
             };
 
             try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+                localStorage.setItem(
+                    STORAGE_KEY,
+                    JSON.stringify(session)
+                );
             } catch (error) {
                 console.warn("Unable to save session locally:", error);
             }
@@ -1941,6 +2217,7 @@
 
                 if (Number.isFinite(saved.headingOffset)) {
                     headingOffset = saved.headingOffset;
+
                     document.getElementById("heading-offset").value =
                         Math.round(headingOffset);
                 }
@@ -1949,7 +2226,9 @@
                     nextObservationId = saved.nextObservationId;
                 } else if (observations.length > 0) {
                     nextObservationId = Math.max(
-                        ...observations.map((observation) => observation.id)
+                        ...observations.map(
+                            (observation) => observation.id
+                        )
                     ) + 1;
                 }
             } catch (error) {
@@ -1976,15 +2255,20 @@
 
             const blob = new Blob(
                 [JSON.stringify(exportData, null, 2)],
-                { type: "application/json" }
+                {
+                    type: "application/json"
+                }
             );
 
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
 
             link.href = url;
+
             link.download =
-                `bearing-triangulation-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+                `bearing-triangulation-${new Date()
+                    .toISOString()
+                    .replace(/[:.]/g, "-")}.json`;
 
             document.body.appendChild(link);
             link.click();
@@ -2005,10 +2289,12 @@
             localStorage.removeItem(STORAGE_KEY);
 
             renderObservationHistory();
+
             showResultInfo(
                 "Record at least two observations to calculate an intersection estimate."
             );
-            drawLocalPlot();
+
+            drawLocalMap();
         }
 
         document.addEventListener("visibilitychange", () => {
@@ -2024,8 +2310,9 @@
         });
 
         loadSession();
+        initializeLocalMap();
         renderObservationHistory();
-        drawLocalPlot();
+        drawLocalMap();
 
         if (observations.length >= 2) {
             calculateEstimate(false);
